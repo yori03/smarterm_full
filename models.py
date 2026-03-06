@@ -30,6 +30,7 @@ class Pasien(Base):
     no_rekam_medis = Column(String(20), unique=True, nullable=False)
     nik = Column(String(16), unique=True, nullable=True)
     nama_pasien = Column(String(100), nullable=False)
+    
     tanggal_lahir = Column(Date, nullable=False)
     jenis_kelamin = Column(Enum('L', 'P'), nullable=False)
     alamat = Column(Text, nullable=True)

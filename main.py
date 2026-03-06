@@ -17,9 +17,14 @@ Cara jalankan server:
   (Dokumentasi API otomatis dari FastAPI)
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
 import models
-from database import engine
+from database import engine, get_db
+from schemas import Token
+from auth import verify_password, create_access_token, get_password_hash
+from schemas import RegisterAdminSchema
 
 # Import semua router dari folder routers/
 from routers import admin, dokter, medical
@@ -47,6 +52,23 @@ app = FastAPI(
 # Router Auth & Admin → semua endpoint di admin.py
 # prefix="/admin" → URL jadi: /admin/login, /admin/register-admin, dst
 # KECUALI login yang kita daftarkan tanpa prefix di bawah
+
+# LOGIN — taruh di root, bukan di /admin
+@app.post("/login", response_model=Token, tags=["Auth"])
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.username == form_data.username).first()
+    if not user or not verify_password(form_data.password, user.password):
+        raise HTTPException(status_code=401, detail="Username atau Password salah")
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Akun belum diaktifkan Admin")
+    token = create_access_token(data={"sub": user.username, "role": user.role})
+    return {"access_token": token, "token_type": "bearer", "role": user.role}
+
+# REGISTER ADMIN — juga taruh di root atau prefix /auth
+@app.post("/register-admin", tags=["Auth"])
+def register_admin(data: RegisterAdminSchema, db: Session = Depends(get_db)):
+    ...
+
 app.include_router(
     admin.router,
     prefix="/admin",

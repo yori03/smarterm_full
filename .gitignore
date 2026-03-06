@@ -1,0 +1,23 @@
+@"
+# Environment variables - JANGAN PERNAH diupload ke GitHub
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+env/
+
+# File audio temporary (upload dokter)
+temp_files/
+
+# VS Code settings
+.vscode/
+
+# Windows
+Thumbs.db
+desktop.ini
+"@ | Set-Content .gitignore

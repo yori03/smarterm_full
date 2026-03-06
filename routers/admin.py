@@ -1,175 +1,166 @@
 """
 routers/admin.py - Endpoint Khusus Admin
 
-Endpoint di sini hanya bisa diakses oleh user dengan role='admin'.
-Satpam yang dipakai: get_current_admin (dari dependencies.py)
+KENAPA FILE INI ADA?
+Memisahkan logika admin dari main.py supaya kode lebih rapi.
+Semua endpoint di sini hanya bisa diakses oleh user dengan role="admin".
 
-Prefix dari mainbaru.py: "/admin"
-Jadi URL lengkapnya: /admin/create-dokter, /admin/activate/1, dll.
+PERUBAHAN DARI VERSI SEBELUMNYA:
+- Endpoint /login DIHAPUS dari sini → sudah dipindah ke main.py
+- Endpoint /register-admin DIHAPUS dari sini → sudah dipindah ke main.py
+- Alasan: login & register adalah aksi publik, bukan fitur khusus admin
+
+PREFIX dari main.py: "/admin"
+Jadi URL lengkapnya:
+  POST /admin/create-dokter
+  PUT  /admin/activate/{user_id}
+  GET  /admin/list-dokter
+
+HUBUNGAN DENGAN FILE LAIN:
+admin.py → import dari:
+  - database.py      (get_db → koneksi database)
+  - models.py        (User → query database)
+  - schemas.py       (CreateDokterSchema → validasi input)
+  - auth.py          (get_password_hash → enkripsi password)
+  - dependencies.py  (get_current_admin → satpam admin)
 """
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 import models
 from database import get_db
-from schemas import Token, RegisterAdminSchema, CreateDokterSchema
-from auth import get_password_hash, verify_password, create_access_token
+from schemas import CreateDokterSchema
+from auth import get_password_hash
 from dependencies import get_current_admin
 
-# APIRouter = versi mini FastAPI, dikumpulkan nanti di main.py
+# APIRouter = versi mini FastAPI
+# Kumpulan endpoint yang nanti digabung ke app utama di main.py
 router = APIRouter()
 
 
 # =============================================================================
-# LOGIN (Tidak butuh prefix /admin karena dipakai semua role)
-# Tapi kita taruh di sini karena logikanya auth
-# Di mainbaru.py nanti kita include tanpa prefix khusus
+# ENDPOINT 1: BUAT AKUN DOKTER
+# URL: POST /admin/create-dokter
+# Siapa yang bisa akses: Admin (butuh token admin yang valid)
 # =============================================================================
-
-@router.post("/login", response_model=Token, tags=["Auth"])
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
-):
-    """
-    Login untuk semua user (admin & dokter).
-    
-    OAuth2PasswordRequestForm = format standar login:
-    - username: string
-    - password: string
-    (Dikirim sebagai form-data, bukan JSON)
-    
-    Return: JWT Token + role user
-    """
-    # Cari user di database
-    user = db.query(models.User).filter(models.User.username == form_data.username).first()
-
-    # Cek username & password
-    if not user or not verify_password(form_data.password, user.password):
-        raise HTTPException(status_code=401, detail="Username atau Password salah")
-
-    # Cek status aktif
-    if not user.is_active:
-        raise HTTPException(status_code=400, detail="Akun belum diaktifkan oleh Admin")
-
-    # Buat token JWT
-    # "sub" = subject (standar JWT untuk menyimpan identitas utama)
-    token = create_access_token(data={"sub": user.username, "role": user.role})
-
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "role": user.role
-    }
-
-
-# =============================================================================
-# REGISTER ADMIN BARU
-# =============================================================================
-
-@router.post("/register-admin", tags=["Auth"])
-def register_admin(
-    data: RegisterAdminSchema,
-    db: Session = Depends(get_db)
-):
-    """
-    Daftarkan admin baru. Status awal is_active=False.
-    Admin hanya bisa login setelah diaktifkan oleh admin lain.
-    
-    Tidak butuh login untuk registrasi (endpoint publik).
-    """
-    # Cek username sudah dipakai
-    if db.query(models.User).filter(models.User.username == data.username).first():
-        raise HTTPException(status_code=400, detail="Username sudah dipakai, coba yang lain")
-
-    new_admin = models.User(
-        username=data.username,
-        password=get_password_hash(data.password),
-        nama_lengkap=data.nama_lengkap,
-        role="admin",
-        is_active=False  # Harus diaktifkan manual oleh admin aktif lainnya
-    )
-    db.add(new_admin)
-    db.commit()
-
-    return {"msg": "Registrasi admin berhasil. Silakan hubungi admin aktif untuk aktivasi akun."}
-
-
-# =============================================================================
-# BUAT AKUN DOKTER (Khusus Admin)
-# =============================================================================
-
 @router.post("/create-dokter")
 def create_dokter(
     data: CreateDokterSchema,
     db: Session = Depends(get_db),
-    admin: models.User = Depends(get_current_admin)  # ← Satpam Admin
+    # get_current_admin akan:
+    # 1. Ambil token dari header
+    # 2. Decode → dapat username
+    # 3. Cek role == "admin"
+    # 4. Kalau bukan admin → tolak 403
+    admin: models.User = Depends(get_current_admin)
 ):
     """
     Admin membuat akun dokter baru.
-    Dokter yang dibuat admin langsung aktif (is_active=True).
     
-    Butuh: Token admin yang valid di header Authorization.
+    Kenapa dokter tidak register sendiri?
+    → Dokter adalah tenaga medis profesional yang harus diverifikasi RS
+    → Admin yang membuatkan akun setelah verifikasi STR (Surat Tanda Registrasi)
+    
+    Berbeda dengan admin (yang bisa self-register tapi harus diaktifkan),
+    dokter langsung aktif setelah admin membuatnya (is_active=True).
     """
+    # Cek username sudah dipakai belum
     if db.query(models.User).filter(models.User.username == data.username).first():
-        raise HTTPException(status_code=400, detail="Username dokter sudah dipakai")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Username '{data.username}' sudah dipakai. Gunakan username lain."
+        )
 
     new_dokter = models.User(
         username=data.username,
-        password=get_password_hash(data.password),
+        password=get_password_hash(data.password),  # WAJIB di-hash!
         nama_lengkap=data.nama_lengkap,
         role="dokter",
         spesialisasi=data.spesialisasi,
         no_str=data.no_str,
-        is_active=True  # Dokter langsung aktif, tidak perlu aktivasi
+        is_active=True  # Dokter langsung aktif (sudah diverifikasi admin)
     )
     db.add(new_dokter)
     db.commit()
+    db.refresh(new_dokter)
 
-    return {"msg": f"Akun dokter '{data.nama_lengkap}' berhasil dibuat dan langsung aktif."}
+    # Log: siapa admin yang membuat akun dokter ini
+    print(f"[ADMIN] {admin.nama_lengkap} membuat akun dokter: {data.nama_lengkap}")
+
+    return {
+        "msg": f"Akun dokter '{data.nama_lengkap}' berhasil dibuat dan langsung aktif.",
+        "id_user": new_dokter.id_user,
+        "username": new_dokter.username,
+        "spesialisasi": new_dokter.spesialisasi,
+        "dibuat_oleh": admin.nama_lengkap
+    }
 
 
 # =============================================================================
-# AKTIVASI AKUN USER (Khusus Admin)
+# ENDPOINT 2: AKTIVASI AKUN USER
+# URL: PUT /admin/activate/{user_id}
+# Siapa yang bisa akses: Admin
+#
+# Kapan dipakai?
+# → Setelah admin baru register via POST /register-admin
+# → Admin yang sudah aktif login → aktifkan admin baru
 # =============================================================================
-
 @router.put("/activate/{user_id}")
 def activate_user(
-    user_id: int,
+    user_id: int,        # Diambil dari URL path, contoh: /admin/activate/5
     db: Session = Depends(get_db),
-    admin: models.User = Depends(get_current_admin)  # ← Satpam Admin
+    admin: models.User = Depends(get_current_admin)
 ):
     """
-    Admin mengaktifkan akun user (biasanya untuk admin baru yang baru register).
+    Aktifkan akun user berdasarkan ID.
     
-    Path parameter {user_id} = ID user yang mau diaktifkan.
-    Contoh URL: PUT /admin/activate/5
+    {user_id} adalah path parameter → diambil langsung dari URL.
+    Contoh: PUT /admin/activate/5 → user_id = 5
     """
-    user = db.query(models.User).filter(models.User.id_user == user_id).first()
+    # Cari user berdasarkan ID
+    user = db.query(models.User).filter(
+        models.User.id_user == user_id
+    ).first()
+
     if not user:
-        raise HTTPException(status_code=404, detail=f"User dengan ID {user_id} tidak ditemukan")
+        raise HTTPException(
+            status_code=404,
+            detail=f"User dengan ID {user_id} tidak ditemukan."
+        )
+
+    # Cek kalau sudah aktif (hindari double aktivasi)
+    if user.is_active:
+        return {"msg": f"Akun '{user.nama_lengkap}' sudah aktif sebelumnya."}
 
     user.is_active = True
     db.commit()
 
-    return {"msg": f"Akun '{user.nama_lengkap}' ({user.role}) berhasil diaktifkan."}
+    print(f"[ADMIN] {admin.nama_lengkap} mengaktifkan akun: {user.nama_lengkap} ({user.role})")
+
+    return {
+        "msg": f"Akun '{user.nama_lengkap}' ({user.role}) berhasil diaktifkan.",
+        "diaktifkan_oleh": admin.nama_lengkap
+    }
 
 
 # =============================================================================
-# LIHAT SEMUA DOKTER (Khusus Admin)
+# ENDPOINT 3: LIHAT SEMUA DOKTER
+# URL: GET /admin/list-dokter
+# Siapa yang bisa akses: Admin
 # =============================================================================
-
 @router.get("/list-dokter")
 def list_dokter(
     db: Session = Depends(get_db),
     admin: models.User = Depends(get_current_admin)
 ):
     """
-    Tampilkan semua akun dokter. Berguna untuk dashboard admin.
+    Tampilkan semua akun dokter yang terdaftar.
+    Berguna untuk dashboard admin.
     """
-    dokter_list = db.query(models.User).filter(models.User.role == "dokter").all()
+    dokter_list = db.query(models.User).filter(
+        models.User.role == "dokter"
+    ).all()
 
     return {
         "total": len(dokter_list),
@@ -183,5 +174,38 @@ def list_dokter(
                 "aktif": d.is_active
             }
             for d in dokter_list
+        ]
+    }
+
+
+# =============================================================================
+# ENDPOINT 4: LIHAT SEMUA USER YANG MENUNGGU AKTIVASI
+# URL: GET /admin/pending-aktivasi
+# Siapa yang bisa akses: Admin
+# =============================================================================
+@router.get("/pending-aktivasi")
+def pending_aktivasi(
+    db: Session = Depends(get_db),
+    admin: models.User = Depends(get_current_admin)
+):
+    """
+    Tampilkan semua user yang belum diaktifkan (is_active=False).
+    Berguna agar admin tahu siapa saja yang menunggu persetujuan.
+    """
+    pending = db.query(models.User).filter(
+        models.User.is_active == False
+    ).all()
+
+    return {
+        "total_pending": len(pending),
+        "data": [
+            {
+                "id": u.id_user,
+                "nama": u.nama_lengkap,
+                "username": u.username,
+                "role": u.role,
+                "terdaftar": str(u.created_at)
+            }
+            for u in pending
         ]
     }
