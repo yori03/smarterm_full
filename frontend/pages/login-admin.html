@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Admin — SmartERM</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --periwinkle-light: #b8b5f5;
+      --periwinkle-mid:   #8f8af0;
+      --periwinkle-main:  #6c63e8;
+      --periwinkle-deep:  #4a3fc0;
+
+      --gray-50:  #f7f8ff;
+      --gray-100: #eef0fb;
+      --gray-200: #dde1f5;
+      --gray-400: #9299c0;
+      --gray-500: #636b9e;
+      --gray-700: #363d6e;
+      --gray-900: #111443;
+
+      --red-500: #ef4444;
+      --red-50:  #fef2f2;
+      --white:   #ffffff;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-xl: 24px;
+
+      --shadow-card:  0 24px 64px rgba(74,63,192,.14), 0 4px 16px rgba(74,63,192,.08);
+      --shadow-input: 0 0 0 3.5px rgba(108,99,232,.14);
+      --transition: .2s cubic-bezier(.4,0,.2,1);
+      --font: 'DM Sans', sans-serif;
+    }
+
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+      background: var(--white);
+      color: var(--gray-900);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left {
+      position: relative;
+      background: linear-gradient(148deg, #9d9af5 0%, #7b78f2 28%, #6c63e8 60%, #a0a8f8 100%);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .left::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,.2) 1px, transparent 1px);
+      background-size: 26px 26px;
+      pointer-events: none; z-index: 0;
+    }
+    .blob { position: absolute; border-radius: 50%; pointer-events: none; z-index: 0; }
+    .blob-1 { width: 440px; height: 440px; background: rgba(255,255,255,.10); top: -130px; right: -110px; }
+    .blob-2 { width: 260px; height: 260px; background: rgba(255,255,255,.07); bottom: 48px; left: -70px; }
+    .blob-3 { width: 140px; height: 140px; background: rgba(255,255,255,.08); bottom: 220px; right: 60px; }
+
+    .left-topbar {
+      position: relative; z-index: 2;
+      display: flex; align-items: center; gap: 10px;
+      padding: 28px 32px;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .logo-words { display: flex; flex-direction: column; line-height: 1.15; }
+    .logo-words .rsia { font-size: 9px; font-weight: 700; letter-spacing: .12em; color: rgba(255,255,255,.6); text-transform: uppercase; }
+    .logo-words .name { font-size: 13px; font-weight: 800; color: #fff; }
+    .logo-words .city { font-size: 9px; font-weight: 500; letter-spacing: .1em; color: rgba(255,255,255,.55); text-transform: uppercase; }
+
+    .left-body {
+      position: relative; z-index: 2;
+      flex: 1;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 0 52px 40px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,.9); letter-spacing: .02em;
+      margin-bottom: 24px; width: fit-content;
+    }
+    .hero-title { font-size: 2.6rem; font-weight: 800; color: var(--white); line-height: 1.12; margin-bottom: 16px; }
+    .hero-title .accent { color: rgba(255,255,255,.55); }
+    .hero-desc { font-size: .95rem; color: rgba(255,255,255,.72); line-height: 1.65; max-width: 340px; margin-bottom: 36px; }
+
+    .feat-list { display: flex; flex-direction: column; gap: 14px; }
+    .feat-item { display: flex; align-items: center; gap: 14px; }
+    .feat-icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+    }
+    .feat-copy .feat-title { font-size: .84rem; font-weight: 700; color: rgba(255,255,255,.92); margin-bottom: 1px; }
+    .feat-copy .feat-sub   { font-size: .76rem; color: rgba(255,255,255,.52); }
+
+    .left-footer {
+      position: relative; z-index: 2;
+      padding: 18px 32px;
+      border-top: 1px solid rgba(255,255,255,.12);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .lf-icon { font-size: .9rem; color: rgba(255,255,255,.45); }
+    .lf-text .lf-title { font-size: .78rem; font-weight: 700; color: rgba(255,255,255,.8); }
+    .lf-text .lf-sub   { font-size: .72rem; color: rgba(255,255,255,.42); }
+
+    /* ── RIGHT PANEL ── */
+    .right { background: var(--gray-50); display: flex; flex-direction: column; }
+
+    .right-topbar { display: flex; justify-content: flex-end; padding: 22px 32px; }
+    .sys-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px; font-weight: 600; color: var(--gray-500);
+    }
+    .sys-badge::before { content: '🔒'; font-size: 11px; }
+
+    .right-center {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 32px 32px;
+    }
+    .auth-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      border: 1px solid rgba(108,99,232,.07);
+      padding: 36px 40px 40px;
+      width: 100%; max-width: 420px;
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .82rem; font-weight: 500;
+      color: var(--gray-500); text-decoration: none;
+      margin-bottom: 20px;
+      transition: color var(--transition);
+    }
+    .back-link:hover { color: var(--periwinkle-main); text-decoration: none; }
+
+    .card-heading { font-size: 1.65rem; font-weight: 800; color: var(--gray-900); line-height: 1.2; margin-bottom: 6px; }
+    .card-sub { font-size: .875rem; color: var(--gray-500); margin-bottom: 28px; line-height: 1.5; }
+
+    #alert-box { padding: 11px 14px; border-radius: var(--radius-sm); font-size: .84rem; margin-bottom: 16px; border: 1px solid transparent; }
+    .alert-error { background: var(--red-50); color: #991b1b; border-color: #fecaca !important; }
+    .d-none { display: none !important; }
+
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; font-size: .81rem; font-weight: 700; color: var(--gray-700); margin-bottom: 7px; }
+    .required { color: var(--red-500); margin-left: 2px; }
+
+    .inp-wrap { position: relative; }
+    .inp-ico {
+      position: absolute; left: 13px; top: 50%;
+      transform: translateY(-50%);
+      font-size: .85rem; color: var(--periwinkle-light);
+      pointer-events: none;
+    }
+    .form-control {
+      width: 100%;
+      padding: 11px 14px 11px 38px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font);
+      font-size: .9rem; color: var(--gray-900);
+      background: var(--gray-50);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+    .form-control:focus { border-color: var(--periwinkle-main); background: var(--white); box-shadow: var(--shadow-input); }
+
+    .pw-wrap { position: relative; }
+    .pw-wrap .form-control { padding-right: 40px; }
+    .pw-toggle {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--gray-400); font-size: .82rem; padding: 2px;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px 20px;
+      background: linear-gradient(135deg, var(--periwinkle-main) 0%, var(--periwinkle-deep) 100%);
+      color: var(--white);
+      border: none; border-radius: var(--radius-md);
+      font-family: var(--font); font-size: .95rem; font-weight: 700;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 18px rgba(74,63,192,.32);
+      transition: filter var(--transition), transform var(--transition), box-shadow var(--transition);
+      margin-bottom: 16px;
+    }
+    .btn-login:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(74,63,192,.42); }
+    .btn-login:disabled { opacity: .55; cursor: not-allowed; }
+
+    .divider {
+      text-align: center; position: relative;
+      color: var(--gray-400); font-size: .78rem;
+      margin: 0 0 16px;
+    }
+    .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: calc(50% - 22px); height: 1px; background: var(--gray-200); }
+    .divider::before { left: 0; }
+    .divider::after  { right: 0; }
+
+    .btn-register {
+      width: 100%;
+      padding: 11px 20px;
+      background: transparent;
+      color: var(--periwinkle-main);
+      border: 1.5px solid var(--periwinkle-mid);
+      border-radius: var(--radius-md);
+      font-family: var(--font); font-size: .88rem; font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition);
+      margin-bottom: 14px;
+    }
+    .btn-register:hover { background: rgba(108,99,232,.06); border-color: var(--periwinkle-main); }
+
+    .info-note {
+      display: flex; align-items: flex-start; gap: 9px;
+      background: rgba(108,99,232,.06);
+      border: 1px solid rgba(108,99,232,.15);
+      border-radius: var(--radius-md);
+      padding: 13px 14px;
+      font-size: .82rem; color: var(--periwinkle-deep); line-height: 1.5;
+    }
+    .info-note .info-ico { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+    .right-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 32px 22px;
+    }
+    .footer-brand { display: flex; align-items: center; gap: 8px; }
+    .fb-icon {
+      width: 26px; height: 26px;
+      background: linear-gradient(135deg, var(--periwinkle-main), var(--periwinkle-deep));
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .72rem;
+    }
+    .fb-words .fb-rsia     { font-size: 8px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .1em; line-height: 1; }
+    .fb-words .fb-hospital { font-size: 11px; font-weight: 800; color: var(--gray-700); line-height: 1.2; }
+    .footer-copy { font-size: 11px; color: var(--gray-400); }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+      body { grid-template-columns: 1fr; }
+      .left { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="left">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="left-topbar">
+      <div class="logo-icon">🏥</div>
+      <div class="logo-words">
+        <span class="rsia">RSIA</span>
+        <span class="name">AL HASANAH</span>
+        <span class="city">MADIUN</span>
+      </div>
+    </div>
+
+    <div class="left-body">
+      <div class="chip">⚙️ SmartERM Admin</div>
+
+      <h1 class="hero-title">
+        Panel Admin<br>
+        <span class="accent">SmartERM.</span>
+      </h1>
+
+      <p class="hero-desc">
+        Kelola akun dokter, aktivasi pengguna, dan pantau seluruh sistem SmartERM dari satu panel terpusat.
+      </p>
+
+      <div class="feat-list">
+        <div class="feat-item">
+          <div class="feat-icon">👤</div>
+          <div class="feat-copy">
+            <div class="feat-title">Buat &amp; kelola akun dokter</div>
+            <div class="feat-sub">Manajemen pengguna terpusat</div>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon">✅</div>
+          <div class="feat-copy">
+            <div class="feat-title">Aktivasi admin baru</div>
+            <div class="feat-sub">Persetujuan &amp; kontrol akses</div>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon">📊</div>
+          <div class="feat-copy">
+            <div class="feat-title">Monitor status pengguna</div>
+            <div class="feat-sub">Pantau aktivitas sistem real-time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-footer">
+      <span class="lf-icon">🛡️</span>
+      <div class="lf-text">
+        <div class="lf-title">Sistem Internal &amp; Akses Terbatas</div>
+        <div class="lf-sub">Data pasien dilindungi sesuai kebijakan internal RSIA AL Hasanah Madiun</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+    <div class="right-topbar">
+      <div class="sys-badge">Sistem Internal • Akses Terbatas</div>
+    </div>
+
+    <div class="right-center">
+      <div class="auth-card">
+
+        <a href="../index.html" class="back-link">← Kembali</a>
+
+        <h2 class="card-heading">Masuk sebagai Admin</h2>
+        <p class="card-sub">Gunakan akun admin yang sudah diaktifkan.</p>
+
+        <div id="alert-box" class="d-none"></div>
+
+        <div class="form-group">
+          <label class="form-label">Username <span class="required">*</span></label>
+          <div class="inp-wrap">
+            <span class="inp-ico">👤</span>
+            <input type="text" id="username" class="form-control"
+              placeholder="Masukkan username admin" autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password <span class="required">*</span></label>
+          <div class="inp-wrap pw-wrap">
+            <span class="inp-ico">🔒</span>
+            <input type="password" id="password" class="form-control"
+              placeholder="Masukkan password" autocomplete="current-password" />
+            <button class="pw-toggle" type="button" onclick="togglePw(this)" tabindex="-1">👁</button>
+          </div>
+        </div>
+
+        <button class="btn-login" id="btn-login" onclick="doLogin()">
+          Masuk &nbsp;→
+        </button>
+
+        <div class="divider">atau</div>
+
+        <button class="btn-register" onclick="window.location.href='register-admin.html'">
+          Daftar Admin Baru
+        </button>
+
+        <div class="info-note">
+          <span class="info-ico">ℹ️</span>
+          Admin baru perlu diaktifkan oleh admin yang sudah aktif.
+        </div>
+
+      </div>
+    </div>
+
+    <div class="right-footer">
+      <div class="footer-brand">
+        <div class="fb-icon">🏥</div>
+        <div class="fb-words">
+          <div class="fb-rsia">RSIA</div>
+          <div class="fb-hospital">AL HASANAH MADIUN</div>
+        </div>
+      </div>
+      <div class="footer-copy">© 2025 SmartERM v1.0.0 • Internal Use Only</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { login } from "../js/api.js";
+    import { saveSession } from "../js/auth.js";
+    import { showToast } from "../js/ui.js";
+
+    // Kalau sudah login sebagai admin, langsung ke dashboard
+    if (localStorage.getItem("role") === "admin") {
+      window.location.href = "dashboard-admin.html";
+    }
+
+    window.doLogin = async function() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const btn      = document.getElementById("btn-login");
+      const alertBox = document.getElementById("alert-box");
+
+      // Validasi input
+      if (!username || !password) {
+        alertBox.className = "alert-error";
+        alertBox.innerHTML = "⚠️ Username dan password wajib diisi.";
+        alertBox.classList.remove("d-none");
+        return;
+      }
+
+      // Loading state
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Masuk...';
+      alertBox.classList.add("d-none");
+
+      try {
+        const data = await login(username, password);
+
+        // Pastikan yang login memang admin
+        if (data.role !== "admin") {
+          throw new Error("Akun ini bukan admin. Gunakan halaman login dokter.");
+        }
+
+        // Simpan session
+        saveSession(data);
+        showToast(`Selamat datang, ${data.nama_lengkap}!`, "success");
+
+        setTimeout(() => {
+          window.location.href = "dashboard-admin.html";
+        }, 800);
+
+      } catch (err) {
+        alertBox.className = "alert-error";
+        alertBox.innerHTML = `❌ ${err.message}`;
+        alertBox.classList.remove("d-none");
+        btn.disabled = false;
+        btn.innerHTML = "Masuk &nbsp;→";
+      }
+    };
+
+    window.togglePw = function(btn) {
+      const input = btn.closest('.pw-wrap').querySelector('input');
+      input.type = input.type === 'password' ? 'text' : 'password';
+      btn.textContent = input.type === 'password' ? '👁' : '🙈';
+    };
+
+    // Enter key support
+    document.addEventListener("keydown", e => {
+      if (e.key === "Enter") window.doLogin();
+    });
+  </script>
+</body>
+</html>

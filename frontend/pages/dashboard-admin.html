@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Admin — SmartERM</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple:       #6c63e8;
+      --purple-deep:  #4a3fc0;
+      --purple-light: #8f8af0;
+      --purple-pale:  #b8b5f5;
+      --purple-bg:    #f0efff;
+      --purple-border:#ddd8ff;
+
+      --teal:         #0d9488;
+      --teal-dark:    #0f766e;
+      --teal-bg:      #f0fdfa;
+
+      --gray-50:  #f7f8ff;
+      --gray-100: #eef0fb;
+      --gray-200: #dde1f5;
+      --gray-300: #c4cadf;
+      --gray-400: #9299c0;
+      --gray-500: #636b9e;
+      --gray-700: #363d6e;
+      --gray-900: #111443;
+
+      --white:     #ffffff;
+      --red-500:   #ef4444;
+      --red-50:    #fef2f2;
+      --green-500: #22c55e;
+      --green-50:  #f0fdf4;
+      --amber-500: #f59e0b;
+      --amber-50:  #fffbeb;
+
+      --sidebar-w: 160px;
+      --nav-h: 114px;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+
+      --shadow-sm:   0 1px 4px rgba(74,63,192,.06);
+      --shadow-md:   0 4px 16px rgba(74,63,192,.10);
+      --shadow-lg:   0 8px 32px rgba(74,63,192,.13);
+      --shadow-card: 0 18px 42px rgba(74,63,192,.12);
+
+      --transition: .2s cubic-bezier(.4,0,.2,1);
+      --font: 'DM Sans', sans-serif;
+    }
+
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--gray-50);
+      color: var(--gray-900);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ══════════════════════════════════════
+       BRAND COLUMN  (fixed left, full height)
+    ══════════════════════════════════════ */
+    .brand-col {
+      position: fixed;
+      left: 0; top: 0;
+      width: var(--sidebar-w);
+      height: 100vh;
+      background: var(--white);
+      border-right: 1px solid var(--gray-200);
+      display: flex;
+      flex-direction: column;
+      z-index: 200;
+    }
+
+    /* logo area — matches dokter topbar height */
+    .brand-top {
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--gray-200);
+      flex-shrink: 0;
+    }
+    .brand-logo {
+      width: 36px; height: 36px; flex-shrink: 0;
+      background: var(--gray-100);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem;
+    }
+    .brand-words { display: flex; flex-direction: column; line-height: 1.2; }
+    .brand-words .bw-rsia { font-size: 8px; font-weight: 700; letter-spacing: .1em; color: var(--gray-400); text-transform: uppercase; }
+    .brand-words .bw-name { font-size: 11px; font-weight: 800; color: var(--gray-900); }
+    .brand-words .bw-city { font-size: 8px; font-weight: 500; letter-spacing: .08em; color: var(--gray-400); text-transform: uppercase; }
+
+    /* sidebar nav */
+    .sidebar-nav {
+      flex: 1;
+      padding: 28px 12px 16px;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .nav-section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      color: var(--gray-400); text-transform: uppercase;
+      padding: 0 8px; margin-bottom: 12px;
+    }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 10px;
+      border-radius: var(--radius-md);
+      font-size: 13px; font-weight: 500;
+      color: var(--gray-500);
+      cursor: pointer;
+      border: none; background: none; width: 100%; text-align: left;
+      text-decoration: none;
+      transition: background var(--transition), color var(--transition);
+      position: relative;
+    }
+    .nav-link:hover { background: var(--purple-bg); color: var(--purple); text-decoration: none; }
+    .nav-link.active { background: var(--purple-bg); color: var(--purple); font-weight: 700; }
+    .nav-link .nl-icon {
+      width: 28px; height: 28px; flex-shrink: 0;
+      background: var(--gray-100);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+      transition: background var(--transition);
+    }
+    .nav-link.active .nl-icon,
+    .nav-link:hover .nl-icon { background: rgba(108,99,232,.12); }
+    .nav-link .nl-badge {
+      margin-left: auto;
+      background: var(--amber-500);
+      color: white;
+      font-size: 10px; font-weight: 700;
+      border-radius: 999px;
+      padding: 1px 7px;
+      display: none;
+    }
+
+    /* system info card at bottom */
+    .sidebar-bottom {
+      padding: 12px;
+      border-top: 1px solid var(--gray-100);
+    }
+    .sys-card {
+      background: var(--purple-bg);
+      border: 1px solid var(--purple-border);
+      border-radius: var(--radius-md);
+      padding: 12px 10px;
+    }
+    .sys-card .sc-icon {
+      width: 24px; height: 24px;
+      background: var(--purple);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; color: white;
+      margin-bottom: 8px;
+    }
+    .sys-card .sc-label { font-size: 10px; font-weight: 700; color: var(--purple-deep); margin-bottom: 2px; }
+    .sys-card .sc-name  { font-size: 11px; font-weight: 800; color: var(--gray-900); line-height: 1.3; margin-bottom: 3px; }
+    .sys-card .sc-desc  { font-size: 9px; color: var(--gray-500); line-height: 1.4; }
+
+    .btn-logout {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; margin-top: 8px;
+      padding: 9px 10px;
+      background: none;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font); font-size: 12px; font-weight: 700;
+      color: var(--gray-500); cursor: pointer;
+      transition: border-color var(--transition), color var(--transition), background var(--transition);
+    }
+    .btn-logout:hover { border-color: var(--red-500); color: var(--red-500); background: var(--red-50); }
+
+    .sidebar-footer-copy { font-size: 9px; color: var(--gray-300); text-align: center; padding: 10px 12px 12px; line-height: 1.5; }
+
+    /* ══════════════════════════════════════
+       TOP NAVBAR  (fixed, left = sidebar-w)
+    ══════════════════════════════════════ */
+    .topnav {
+      position: fixed;
+      top: 0; left: var(--sidebar-w); right: 0;
+      height: var(--nav-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 100;
+    }
+    .topnav-left { display: flex; flex-direction: column; gap: 3px; }
+    .topnav-app {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .topnav-app .app-name { font-size: 16px; font-weight: 800; color: var(--gray-900); }
+    .topnav-app .app-badge {
+      background: var(--purple);
+      color: white;
+      font-size: 9px; font-weight: 700;
+      padding: 2px 7px; border-radius: 999px;
+      letter-spacing: .05em;
+    }
+    .topnav-workspace { font-size: 13px; font-weight: 500; color: var(--gray-500); }
+
+    .topnav-right { display: flex; align-items: center; gap: 12px; }
+    .user-card {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 10px 16px;
+      box-shadow: 0 8px 24px rgba(74,63,192,.07);
+    }
+    .user-card .uc-avatar {
+      width: 32px; height: 32px;
+      background: var(--purple-bg);
+      border: 1.5px solid var(--purple-border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem;
+    }
+    .user-card .uc-info { display: flex; flex-direction: column; line-height: 1.2; }
+    .user-card .uc-name { font-size: 13px; font-weight: 700; color: var(--gray-900); }
+    .user-card .uc-role { font-size: 11px; font-weight: 500; color: var(--gray-400); }
+
+    .notif-btn {
+      width: 40px; height: 40px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; cursor: pointer;
+      box-shadow: 0 8px 24px rgba(74,63,192,.07);
+      transition: background var(--transition);
+    }
+    .notif-btn:hover { background: var(--purple-bg); }
+
+    /* ══════════════════════════════════════
+       MAIN CONTENT
+    ══════════════════════════════════════ */
+    .main-wrap {
+      margin-left: var(--sidebar-w);
+      padding-top: var(--nav-h);
+      min-height: 100vh;
+    }
+    .main-content {
+      padding: 48px 48px;
+    }
+
+    /* section hide/show */
+    .sec { display: none; }
+    .sec.active { display: block; }
+
+    /* ── Page header ── */
+    .page-hdr { margin-bottom: 32px; }
+    .page-hdr h2 { font-size: 26px; font-weight: 800; color: var(--gray-900); margin-bottom: 4px; }
+    .page-hdr p  { font-size: 14px; color: var(--gray-500); }
+
+    /* ── Stat grid — same card style as dokter action cards ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    /* large action cards — mirror dokter purple/teal/white cards */
+    .stat-card {
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      display: flex; flex-direction: column;
+      min-height: 160px;
+      position: relative; overflow: hidden;
+      cursor: default;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+
+    .stat-card.purple {
+      background: linear-gradient(135deg, #7b6ff5 0%, var(--purple-deep) 100%);
+      box-shadow: 0 18px 42px rgba(108,99,232,.28);
+      color: white;
+    }
+    .stat-card.teal {
+      background: linear-gradient(135deg, #12aaa8 0%, var(--teal-dark) 100%);
+      box-shadow: 0 18px 42px rgba(13,148,136,.25);
+      color: white;
+    }
+    .stat-card.white {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow-card);
+      color: var(--gray-900);
+    }
+
+    .sc-icon-circle {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      flex-shrink: 0;
+    }
+    .stat-card.purple .sc-icon-circle { background: rgba(255,255,255,.18); }
+    .stat-card.teal   .sc-icon-circle { background: rgba(255,255,255,.18); }
+    .stat-card.white  .sc-icon-circle { background: var(--purple-bg); }
+
+    .sc-label { font-size: 12px; font-weight: 600; opacity: .75; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .05em; }
+    .stat-card.white .sc-label { color: var(--gray-500); opacity: 1; }
+
+    .sc-value {
+      font-size: 2.8rem; font-weight: 800; line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-card.white .sc-value { color: var(--gray-900); }
+
+    .sc-sub { font-size: 12px; opacity: .65; }
+    .stat-card.white .sc-sub { color: var(--gray-400); opacity: 1; }
+
+    /* arrow button at bottom-right */
+    .sc-arrow {
+      position: absolute; bottom: 20px; right: 20px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      transition: background var(--transition), transform var(--transition);
+    }
+    .stat-card.purple .sc-arrow,
+    .stat-card.teal   .sc-arrow { background: rgba(255,255,255,.2); color: white; }
+    .stat-card.white  .sc-arrow { background: var(--purple-bg); color: var(--purple); }
+    .sc-arrow:hover { transform: scale(1.1); }
+
+    /* ── Tip / info box — same as dokter ── */
+    .tip-box {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 28px 28px;
+      display: flex; align-items: flex-start; gap: 18px;
+      box-shadow: 0 10px 28px rgba(74,63,192,.05);
+      margin-bottom: 36px;
+    }
+    .tip-ico {
+      width: 52px; height: 52px; flex-shrink: 0;
+      background: var(--purple-bg);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .tip-body .tip-title { font-size: 14px; font-weight: 700; color: var(--gray-900); margin-bottom: 6px; }
+    .tip-body .tip-desc  { font-size: 13px; color: var(--gray-500); line-height: 1.6; }
+    .tip-body .tip-desc b { color: var(--purple); }
+
+    /* ── Cards (table wrapper) ── */
+    .data-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .data-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .data-card-header h3 { font-size: 14px; font-weight: 700; color: var(--gray-900); }
+    .data-card-body { padding: 0; }
+
+    /* tables */
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: var(--gray-50); }
+    thead th { padding: 11px 20px; text-align: left; font-weight: 700; font-size: 11px; color: var(--gray-500); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--gray-100); }
+    tbody td { padding: 14px 20px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--gray-50); }
+    .tbl-empty { text-align: center; padding: 3rem; color: var(--gray-400); font-size: 13px; }
+
+    /* badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+    }
+    .badge-green  { background: var(--green-50);  color: #166534; }
+    .badge-red    { background: var(--red-50);    color: #991b1b; }
+    .badge-amber  { background: var(--amber-50);  color: #92400e; }
+    .badge-purple { background: var(--purple-bg); color: var(--purple-deep); }
+
+    /* buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--radius-md);
+      font-family: var(--font); font-size: 13px; font-weight: 700;
+      cursor: pointer; border: none;
+      transition: filter var(--transition), transform var(--transition);
+      text-decoration: none; white-space: nowrap;
+    }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple) 0%, var(--purple-deep) 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(74,63,192,.28);
+    }
+    .btn-primary:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn-success {
+      background: linear-gradient(135deg, #12aaa8 0%, var(--teal-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(13,148,136,.25);
+    }
+    .btn-success:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent; color: var(--purple);
+      border: 1.5px solid var(--purple-pale);
+    }
+    .btn-outline:hover { background: var(--purple-bg); }
+    .btn-secondary {
+      background: var(--gray-100); color: var(--gray-700);
+      border: 1px solid var(--gray-200);
+    }
+    .btn-secondary:hover { background: var(--gray-200); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* form section */
+    .form-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow-sm);
+      padding: 28px 28px;
+      max-width: 640px;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--gray-700); margin-bottom: 6px; }
+    .required { color: var(--red-500); margin-left: 2px; }
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      font-family: var(--font); font-size: 13px;
+      color: var(--gray-900); background: var(--gray-50);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+    .form-control:focus {
+      border-color: var(--purple);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(108,99,232,.12);
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+
+    /* alert */
+    .alert { padding: 12px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; border: 1px solid transparent; }
+    .alert-error   { background: var(--red-50);   color: #991b1b; border-color: #fecaca; }
+    .alert-success { background: var(--green-50); color: #166534; border-color: #bbf7d0; }
+    .d-none { display: none !important; }
+
+    /* spinner */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+    .spinner.dark {
+      border-color: rgba(108,99,232,.2);
+      border-top-color: var(--purple);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* toast */
+    #toast-container {
+      position: fixed; top: 20px; right: 24px;
+      z-index: 9999;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .toast {
+      background: var(--white); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      padding: 13px 18px;
+      display: flex; align-items: center; gap: 10px;
+      min-width: 260px; max-width: 360px;
+      border-left: 4px solid;
+      font-size: 13px;
+      animation: slideIn .3s cubic-bezier(.4,0,.2,1);
+    }
+    .toast.success { border-color: var(--green-500); }
+    .toast.error   { border-color: var(--red-500);   }
+    .toast.info    { border-color: var(--purple);     }
+    @keyframes slideIn { from { transform: translateX(120%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+
+    code {
+      font-family: 'Courier New', monospace;
+      background: var(--gray-100);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12px;
+      color: var(--purple-deep);
+    }
+
+    @media (max-width: 900px) {
+      .stat-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════ BRAND / SIDEBAR ════ -->
+  <div class="brand-col">
+
+    <div class="brand-top">
+      <div class="brand-logo">🏥</div>
+      <div class="brand-words">
+        <span class="bw-rsia">RSIA</span>
+        <span class="bw-name">AL HASANAH</span>
+        <span class="bw-city">MADIUN</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu Admin</div>
+
+      <button class="nav-link active" onclick="showSection('dashboard')">
+        <span class="nl-icon">📊</span> Dashboard
+      </button>
+      <button class="nav-link" onclick="showSection('list-dokter')">
+        <span class="nl-icon">👨‍⚕️</span> Daftar Dokter
+      </button>
+      <button class="nav-link" onclick="showSection('tambah-dokter')">
+        <span class="nl-icon">➕</span> Tambah Dokter
+      </button>
+      <button class="nav-link" onclick="showSection('pending')">
+        <span class="nl-icon">⏳</span> Pending
+        <span id="pending-badge" class="nl-badge">0</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sys-card">
+        <div class="sc-icon">🛡️</div>
+        <div class="sc-label">Sistem Internal</div>
+        <div class="sc-name">RSIA AL Hasanah Madiun</div>
+        <div class="sc-desc">Semua data pasien dilindungi sesuai kebijakan internal.</div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">
+        <span>↩</span> Keluar
+      </button>
+    </div>
+
+    <div class="sidebar-footer-copy">
+      © 2025 RSIA AL Hasanah Madiun<br>SmartERM v1.0.0
+    </div>
+
+  </div>
+
+  <!-- ════ TOP NAV ════ -->
+  <header class="topnav">
+    <div class="topnav-left">
+      <div class="topnav-app">
+        <span class="app-name">SmartERM</span>
+        <span class="app-badge">ADMIN</span>
+      </div>
+      <div class="topnav-workspace">Admin Workspace</div>
+    </div>
+    <div class="topnav-right">
+      <div class="user-card">
+        <div class="uc-avatar">👨‍💼</div>
+        <div class="uc-info">
+          <span class="uc-name" id="user-name">Admin</span>
+          <span class="uc-role">Administrator</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ════ MAIN WRAP ════ -->
+  <div class="main-wrap">
+    <main class="main-content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <section id="sec-dashboard" class="sec active">
+        <div class="page-hdr">
+          <h2>Selamat Datang! 👋</h2>
+          <p id="dash-subtitle">Pantau dan kelola sistem SmartERM dari panel admin.</p>
+        </div>
+
+        <!-- 3 stat cards -->
+        <div class="stat-grid">
+          <div class="stat-card purple">
+            <div class="sc-icon-circle">👨‍⚕️</div>
+            <div class="sc-label">Total Dokter</div>
+            <div class="sc-value" id="stat-total-dokter">—</div>
+            <div class="sc-sub">Akun dokter terdaftar</div>
+            <button class="sc-arrow" onclick="showSection('list-dokter')">→</button>
+          </div>
+          <div class="stat-card teal">
+            <div class="sc-icon-circle">✅</div>
+            <div class="sc-label">Dokter Aktif</div>
+            <div class="sc-value" id="stat-aktif">—</div>
+            <div class="sc-sub">Siap menggunakan sistem</div>
+            <button class="sc-arrow" onclick="showSection('list-dokter')">→</button>
+          </div>
+          <div class="stat-card white">
+            <div class="sc-icon-circle">⏳</div>
+            <div class="sc-label">Pending Aktivasi</div>
+            <div class="sc-value" id="stat-pending">—</div>
+            <div class="sc-sub">Menunggu persetujuan</div>
+            <button class="sc-arrow" onclick="showSection('pending')">→</button>
+          </div>
+        </div>
+
+        <!-- tip box -->
+        <div class="tip-box">
+          <div class="tip-ico">⚙️</div>
+          <div class="tip-body">
+            <div class="tip-title">Cara mengelola sistem:</div>
+            <div class="tip-desc">
+              Klik <b>"Tambah Dokter"</b> untuk membuat akun dokter baru yang langsung aktif →
+              pantau <b>"Pending Aktivasi"</b> untuk menyetujui admin baru →
+              gunakan <b>"Daftar Dokter"</b> untuk memantau seluruh akun.
+            </div>
+          </div>
+        </div>
+
+        <!-- pending preview table -->
+        <div class="data-card">
+          <div class="data-card-header">
+            <h3>⏳ Menunggu Aktivasi</h3>
+            <button class="btn btn-outline btn-sm" onclick="showSection('pending')">Lihat Semua</button>
+          </div>
+          <div class="data-card-body" id="pending-preview">
+            <div class="tbl-empty">Memuat data...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ LIST DOKTER ══ -->
+      <section id="sec-list-dokter" class="sec">
+        <div class="page-hdr">
+          <h2>Daftar Dokter 👨‍⚕️</h2>
+          <p>Semua akun dokter yang terdaftar di sistem.</p>
+        </div>
+        <div class="data-card">
+          <div class="data-card-header">
+            <h3>Dokter Terdaftar</h3>
+            <button class="btn btn-primary btn-sm" onclick="showSection('tambah-dokter')">+ Tambah Dokter</button>
+          </div>
+          <div class="data-card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nama Lengkap</th>
+                    <th>Username</th>
+                    <th>Spesialisasi</th>
+                    <th>No. STR</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tabel-dokter">
+                  <tr><td colspan="6" class="tbl-empty">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ TAMBAH DOKTER ══ -->
+      <section id="sec-tambah-dokter" class="sec">
+        <div class="page-hdr">
+          <h2>Tambah Akun Dokter ➕</h2>
+          <p>Buat akun dokter baru. Dokter yang dibuat admin langsung aktif.</p>
+        </div>
+        <div class="form-card">
+          <div id="alert-dokter" class="alert d-none"></div>
+          <div id="success-dokter" class="alert d-none"></div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nama Lengkap <span class="required">*</span></label>
+              <input type="text" id="d-nama" class="form-control" placeholder="dr. Nama Dokter, Sp.OG" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Username <span class="required">*</span></label>
+              <input type="text" id="d-username" class="form-control" placeholder="dr_nama" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Password <span class="required">*</span></label>
+              <input type="password" id="d-password" class="form-control" placeholder="Min. 6 karakter" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Spesialisasi <span class="required">*</span></label>
+              <input type="text" id="d-spesialisasi" class="form-control" placeholder="Obstetri & Ginekologi" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nomor STR <span class="required">*</span></label>
+            <input type="text" id="d-no-str" class="form-control" placeholder="Nomor Surat Tanda Registrasi" />
+            <p class="form-hint">Surat Tanda Registrasi dokter — wajib diisi sesuai regulasi.</p>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <button class="btn btn-primary" id="btn-tambah-dokter" onclick="doTambahDokter()">
+              Simpan Akun Dokter
+            </button>
+            <button class="btn btn-secondary" onclick="showSection('list-dokter')">Batal</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ PENDING AKTIVASI ══ -->
+      <section id="sec-pending" class="sec">
+        <div class="page-hdr">
+          <h2>Pending Aktivasi ⏳</h2>
+          <p>User yang sudah daftar namun belum diaktifkan.</p>
+        </div>
+        <div class="data-card">
+          <div class="data-card-header">
+            <h3>Menunggu Persetujuan</h3>
+            <button class="btn btn-outline btn-sm" onclick="loadPending()">🔄 Refresh</button>
+          </div>
+          <div class="data-card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Terdaftar</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tabel-pending">
+                  <tr><td colspan="6" class="tbl-empty">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import { listDokter, pendingAktivasi, aktivasiUser, createDokter } from "../js/api.js";
+    import { guardPage, renderUserInfo, logout } from "../js/auth.js";
+    import { showToast, formatDateTime } from "../js/ui.js";
+
+    // ─── Guard: hanya admin boleh masuk ──────────────────────
+    guardPage("admin");
+    renderUserInfo("user-name");
+
+    // ─── Section switcher ─────────────────────────────────────
+    window.showSection = function(name) {
+      document.querySelectorAll(".sec").forEach(s => s.classList.remove("active"));
+      document.getElementById(`sec-${name}`).classList.add("active");
+
+      document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+      const linkMap = { "dashboard": 0, "list-dokter": 1, "tambah-dokter": 2, "pending": 3 };
+      document.querySelectorAll(".nav-link")[linkMap[name]]?.classList.add("active");
+
+      if (name === "list-dokter") loadDokter();
+      if (name === "pending")     loadPending();
+      if (name === "dashboard")   loadDashboard();
+    };
+
+    // ─── Load Dashboard ───────────────────────────────────────
+    async function loadDashboard() {
+      try {
+        const [dokterData, pendingData] = await Promise.all([
+          listDokter(), pendingAktivasi()
+        ]);
+
+        document.getElementById("stat-total-dokter").textContent = dokterData.total;
+        document.getElementById("stat-aktif").textContent = dokterData.data.filter(d => d.aktif).length;
+        document.getElementById("stat-pending").textContent = pendingData.total_pending;
+
+        // Badge di sidebar
+        const badge = document.getElementById("pending-badge");
+        if (pendingData.total_pending > 0) {
+          badge.textContent = pendingData.total_pending;
+          badge.style.display = "inline-flex";
+        } else {
+          badge.style.display = "none";
+        }
+
+        // Pending preview
+        const preview = document.getElementById("pending-preview");
+        if (pendingData.total_pending === 0) {
+          preview.innerHTML = `<div class="tbl-empty">✅ Tidak ada yang menunggu aktivasi.</div>`;
+        } else {
+          preview.innerHTML = `
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Nama</th><th>Role</th><th>Terdaftar</th><th>Aksi</th></tr></thead>
+                <tbody>
+                  ${pendingData.data.slice(0,5).map(u => `
+                    <tr>
+                      <td><strong>${u.nama}</strong></td>
+                      <td><span class="badge badge-amber">${u.role}</span></td>
+                      <td>${formatDateTime(u.terdaftar)}</td>
+                      <td><button class="btn btn-success btn-sm" onclick="doAktivasi(${u.id}, '${u.nama}')">✅ Aktifkan</button></td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `;
+        }
+      } catch (err) {
+        showToast("Gagal memuat dashboard: " + err.message, "error");
+      }
+    }
+
+    // ─── Load Daftar Dokter ────────────────────────────────────
+    async function loadDokter() {
+      const tbody = document.getElementById("tabel-dokter");
+      tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty"><span class="spinner dark"></span></td></tr>`;
+      try {
+        const data = await listDokter();
+        if (data.total === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">Belum ada dokter terdaftar.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = data.data.map((d, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td><strong>${d.nama}</strong></td>
+            <td><code>${d.username}</code></td>
+            <td>${d.spesialisasi || "-"}</td>
+            <td>${d.no_str || "-"}</td>
+            <td>${d.aktif
+              ? '<span class="badge badge-green">✅ Aktif</span>'
+              : '<span class="badge badge-red">❌ Nonaktif</span>'
+            }</td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        showToast("Gagal memuat daftar dokter: " + err.message, "error");
+      }
+    }
+
+    // ─── Load Pending Aktivasi ─────────────────────────────────
+    window.loadPending = async function() {
+      const tbody = document.getElementById("tabel-pending");
+      tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty"><span class="spinner dark"></span></td></tr>`;
+      try {
+        const data = await pendingAktivasi();
+        if (data.total_pending === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">✅ Tidak ada yang menunggu aktivasi.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = data.data.map(u => `
+          <tr>
+            <td>${u.id}</td>
+            <td><strong>${u.nama}</strong></td>
+            <td><code>${u.username}</code></td>
+            <td><span class="badge badge-amber">${u.role}</span></td>
+            <td>${formatDateTime(u.terdaftar)}</td>
+            <td>
+              <button class="btn btn-success btn-sm" onclick="doAktivasi(${u.id}, '${u.nama}')">
+                ✅ Aktifkan
+              </button>
+            </td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        showToast("Gagal memuat data pending: " + err.message, "error");
+      }
+    };
+
+    // ─── Aktivasi User ─────────────────────────────────────────
+    window.doAktivasi = async function(userId, nama) {
+      if (!confirm(`Aktifkan akun "${nama || userId}"?`)) return;
+      try {
+        const res = await aktivasiUser(userId);
+        showToast(res.msg, "success");
+        loadPending();
+        loadDashboard();
+      } catch (err) {
+        showToast("Gagal aktivasi: " + err.message, "error");
+      }
+    };
+
+    // ─── Tambah Dokter ─────────────────────────────────────────
+    window.doTambahDokter = async function() {
+      const alertBox   = document.getElementById("alert-dokter");
+      const successBox = document.getElementById("success-dokter");
+      const btn        = document.getElementById("btn-tambah-dokter");
+
+      const payload = {
+        nama_lengkap:  document.getElementById("d-nama").value.trim(),
+        username:      document.getElementById("d-username").value.trim(),
+        password:      document.getElementById("d-password").value,
+        spesialisasi:  document.getElementById("d-spesialisasi").value.trim(),
+        no_str:        document.getElementById("d-no-str").value.trim()
+      };
+
+      const missing = Object.entries(payload).filter(([k,v]) => !v).map(([k]) => k);
+      if (missing.length) {
+        alertBox.className = "alert alert-error";
+        alertBox.innerHTML = `⚠️ Field berikut wajib diisi: ${missing.join(", ")}`;
+        alertBox.classList.remove("d-none");
+        return;
+      }
+      if (payload.password.length < 6) {
+        alertBox.className = "alert alert-error";
+        alertBox.innerHTML = "⚠️ Password minimal 6 karakter.";
+        alertBox.classList.remove("d-none");
+        return;
+      }
+
+      alertBox.classList.add("d-none");
+      successBox.classList.add("d-none");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
+
+      try {
+        const res = await createDokter(payload);
+        successBox.className = "alert alert-success";
+        successBox.innerHTML = `✅ Akun dokter <strong>${payload.nama_lengkap}</strong> berhasil dibuat dan langsung aktif.`;
+        successBox.classList.remove("d-none");
+
+        ["d-nama","d-username","d-password","d-spesialisasi","d-no-str"].forEach(id => {
+          document.getElementById(id).value = "";
+        });
+
+        showToast("Dokter berhasil ditambahkan!", "success");
+      } catch (err) {
+        alertBox.className = "alert alert-error";
+        alertBox.innerHTML = `❌ ${err.message}`;
+        alertBox.classList.remove("d-none");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "Simpan Akun Dokter";
+      }
+    };
+
+    // ─── Logout ────────────────────────────────────────────────
+    window.doLogout = function() {
+      if (confirm("Yakin ingin keluar?")) logout();
+    };
+
+    // ─── Init ──────────────────────────────────────────────────
+    loadDashboard();
+  </script>
+</body>
+</html>

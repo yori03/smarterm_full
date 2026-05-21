@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Dokter — SmartERM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple:        #5b5bd6;
+      --purple-dark:   #4646b5;
+      --purple-bg:     #f0f0ff;
+      --purple-border: rgba(91,91,214,0.15);
+      --text:          #111827;
+      --text-soft:     #374151;
+      --text-muted:    #6b7280;
+      --border:        #e5e7eb;
+      --bg:            #f5f5fb;
+      --white:         #ffffff;
+      --nav-h:         72px;
+      --side-w:        220px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* ─── NAVBAR ─── */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: white;
+      border-bottom: 1px solid var(--border);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .nav-brand {
+      width: var(--side-w);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0 1.4rem;
+      height: 100%;
+      border-right: 1px solid var(--border);
+    }
+    .nav-brand-logo {
+      width: 38px; height: 38px; border-radius: 11px;
+      background: var(--purple-bg); border: 1px solid var(--purple-border);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .nav-brand-logo svg { width: 22px; height: 22px; }
+    .nbt { line-height: 1.25; }
+    .nbt .top { font-size: 0.52rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; }
+    .nbt .name { font-size: 0.84rem; font-weight: 800; color: var(--text); }
+    .nbt .sub  { font-size: 0.52rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .nav-center {
+      flex: 1; padding: 0 1.75rem;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .app-name {
+      display: flex; align-items: center; gap: 0.42rem;
+      font-size: 0.93rem; font-weight: 800; color: var(--text);
+    }
+    .ai-badge {
+      background: var(--purple); color: white;
+      font-size: 0.56rem; font-weight: 800;
+      padding: 0.1rem 0.38rem; border-radius: 5px; letter-spacing: 0.04em;
+    }
+    .workspace-label { font-size: 0.71rem; color: var(--text-muted); font-weight: 500; }
+
+    .nav-right {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0 1.5rem; flex-shrink: 0;
+    }
+    .user-info { display: flex; align-items: center; gap: 0.55rem; cursor: pointer; }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 999px;
+      background: var(--purple-bg); border: 1.5px solid var(--purple-border);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .user-avatar svg { width: 15px; height: 15px; stroke: var(--purple); }
+    .um .uname { font-size: 0.78rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .um .urole { font-size: 0.66rem; color: var(--text-muted); font-weight: 500; }
+    .chevron-btn { background: none; border: none; cursor: pointer; display: flex; color: var(--text-muted); padding: 0; }
+    .chevron-btn svg { width: 13px; height: 13px; stroke: currentColor; }
+    .notif-btn {
+      position: relative; width: 32px; height: 32px; border-radius: 999px;
+      background: var(--purple-bg); border: 1px solid var(--purple-border);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;
+    }
+    .notif-btn svg { width: 14px; height: 14px; stroke: var(--purple); }
+    .notif-dot { position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 999px; background: var(--purple); border: 2px solid white; }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      position: fixed;
+      top: var(--nav-h); left: 0; bottom: 0;
+      width: var(--side-w);
+      background: white;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 1.4rem 0 1rem;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    .sb-title {
+      font-size: 0.61rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-muted);
+      padding: 0 1.2rem; margin-bottom: 0.55rem;
+    }
+    .sb-nav { display: flex; flex-direction: column; gap: 0.08rem; flex: 1; }
+
+    .sb-link {
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.62rem 1.2rem;
+      font-size: 0.82rem; font-weight: 600; color: var(--text-muted);
+      cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left; text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sb-link:hover  { background: var(--purple-bg); color: var(--purple); text-decoration: none; }
+    .sb-link.active { background: var(--purple-bg); color: var(--purple); font-weight: 700; }
+
+    .licon {
+      width: 27px; height: 27px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sb-link.active .licon           { background: var(--purple); }
+    .sb-link.active .licon svg       { stroke: white; }
+    .sb-link:not(.active) .licon svg { stroke: var(--text-muted); }
+    .sb-link:hover:not(.active) .licon     { background: rgba(91,91,214,.10); }
+    .sb-link:hover:not(.active) .licon svg { stroke: var(--purple); }
+    .licon svg { width: 13px; height: 13px; }
+
+    .sb-bottom { padding: 0.7rem 1rem 0; border-top: 1px solid var(--border); margin-top: 1rem; }
+    .sb-infocard {
+      background: var(--purple-bg); border: 1px solid var(--purple-border);
+      border-radius: 11px; padding: 0.75rem;
+      display: flex; align-items: flex-start; gap: 0.5rem;
+    }
+    .sw { width: 24px; height: 24px; border-radius: 7px; background: rgba(91,91,214,.14); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sw svg { width: 12px; height: 12px; stroke: var(--purple); }
+    .it  { font-size: 0.66rem; font-weight: 800; color: var(--text); }
+    .in  { font-size: 0.68rem; font-weight: 800; color: var(--purple); }
+    .id  { font-size: 0.6rem;  color: var(--text-muted); font-weight: 500; margin-top: 0.12rem; line-height: 1.4; }
+
+    .sb-footer { padding: 0.7rem 1.2rem 0; }
+    .sb-footer p { font-size: 0.6rem; color: var(--text-muted); font-weight: 500; line-height: 1.6; }
+
+    /* ─── MAIN ─── */
+    /* KEY FIX: margin-left = sidebar width, padding-top = navbar height */
+    .main-content {
+      margin-left: var(--side-w);
+      padding-top: calc(var(--nav-h) + 2.5rem);
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+      padding-bottom: 3rem;
+      min-height: 100vh;
+    }
+
+    .page-header { margin-bottom: 2rem; }
+    .page-header h2 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text); margin-bottom: 0.3rem; }
+    .page-header p  { font-size: 0.87rem; color: var(--text-muted); font-weight: 500; }
+
+    /* Action grid */
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .action-card {
+      border-radius: 20px; padding: 1.75rem 1.5rem;
+      cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      display: flex; flex-direction: column; justify-content: space-between; min-height: 195px;
+    }
+    .action-card:hover { transform: translateY(-4px); }
+
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; }
+    .cic { width: 50px; height: 50px; border-radius: 999px; display: flex; align-items: center; justify-content: center; }
+    .cic svg { width: 21px; height: 21px; }
+    .ca  { width: 38px; height: 38px; border-radius: 999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ca svg { width: 16px; height: 16px; }
+    .ctitle { font-size: 1.08rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.32rem; }
+    .cdesc  { font-size: 0.8rem; font-weight: 500; line-height: 1.55; }
+
+    .card-purple { background: linear-gradient(145deg,#6366f1,#4f46e5); box-shadow: 0 8px 26px rgba(99,102,241,.28); }
+    .card-purple:hover { box-shadow: 0 14px 40px rgba(99,102,241,.38); }
+    .card-purple .cic { background: rgba(255,255,255,.22); }
+    .card-purple .cic svg,.card-purple .ca svg { stroke: white; }
+    .card-purple .ca { background: rgba(255,255,255,.26); }
+    .card-purple .ctitle { color: white; } .card-purple .cdesc { color: rgba(255,255,255,.82); }
+
+    .card-teal { background: linear-gradient(145deg,#14b8a6,#0d9488); box-shadow: 0 8px 26px rgba(20,184,166,.26); }
+    .card-teal:hover { box-shadow: 0 14px 40px rgba(20,184,166,.36); }
+    .card-teal .cic { background: rgba(255,255,255,.22); }
+    .card-teal .cic svg,.card-teal .ca svg { stroke: white; }
+    .card-teal .ca { background: rgba(255,255,255,.26); }
+    .card-teal .ctitle { color: white; } .card-teal .cdesc { color: rgba(255,255,255,.82); }
+
+    .card-white { background: white; border: 1px solid var(--border); box-shadow: 0 4px 14px rgba(0,0,0,.05); }
+    .card-white:hover { box-shadow: 0 10px 30px rgba(91,91,214,.10); border-color: var(--purple-border); }
+    .card-white .cic { background: var(--purple-bg); border: 1px solid var(--purple-border); }
+    .card-white .cic svg,.card-white .ca svg { stroke: var(--purple); }
+    .card-white .ca { background: var(--purple-bg); border: 1px solid var(--purple-border); }
+    .card-white .ctitle { color: var(--text); } .card-white .cdesc { color: var(--text-muted); }
+
+    /* Tip box */
+    .tip-box {
+      background: white; border: 1px solid var(--border); border-radius: 15px;
+      padding: 1.4rem 1.65rem; display: flex; align-items: flex-start;
+      gap: 1rem; position: relative; overflow: hidden;
+    }
+    .tip-icon {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: var(--purple-bg); border: 1px solid var(--purple-border);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .tip-icon svg { width: 16px; height: 16px; stroke: var(--purple); }
+    .tip-title { font-size: 0.84rem; font-weight: 600; color: var(--text-soft); margin-bottom: 0.28rem; }
+    .tip-steps { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; line-height: 1.7; }
+    .tip-steps .link { color: var(--purple); font-weight: 700; }
+    .tip-deco { position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%); opacity: 0.10; pointer-events: none; }
+    .tip-deco svg { width: 68px; height: 68px; }
+
+    /* Generic card */
+    .card {
+      background: white; border-radius: 14px; border: 1px solid var(--border);
+      padding: 1.4rem; box-shadow: 0 2px 6px rgba(0,0,0,.04); margin-bottom: 1.2rem;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.2rem; padding-bottom: 0.88rem; border-bottom: 1px solid var(--border);
+    }
+    .card-header h3 { font-size: 0.92rem; font-weight: 700; color: var(--text); }
+
+    .form-group { margin-bottom: 0.95rem; }
+    .form-label { display: block; font-size: 0.79rem; font-weight: 700; color: var(--text-soft); margin-bottom: 0.38rem; }
+    .required { color: #dc2626; }
+    .form-control {
+      width: 100%; padding: 0.65rem 0.85rem;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-family: inherit; font-size: 0.86rem; color: var(--text);
+      background: white; outline: none; transition: border-color 0.16s, box-shadow 0.16s;
+    }
+    .form-control:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(91,91,214,.10); }
+    textarea.form-control { resize: vertical; min-height: 68px; }
+    .form-hint { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.26rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+      padding: 0.58rem 1.05rem; border-radius: 10px; font-family: inherit;
+      font-size: 0.83rem; font-weight: 700; cursor: pointer; border: none;
+      transition: all 0.16s; white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary  { background: var(--purple); color: white; box-shadow: 0 3px 10px rgba(91,91,214,.23); }
+    .btn-primary:hover:not(:disabled) { background: var(--purple-dark); box-shadow: 0 5px 16px rgba(91,91,214,.33); }
+    .btn-secondary { background: #f3f4f6; color: var(--text-soft); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #e8e9ed; }
+    .btn-outline { background: transparent; color: var(--purple); border: 1.5px solid var(--purple-border); }
+    .btn-outline:hover { background: var(--purple-bg); }
+    .btn-sm { padding: 0.36rem 0.7rem; font-size: 0.75rem; border-radius: 8px; }
+
+    .alert { padding: 0.8rem 1rem; border-radius: 11px; font-size: 0.82rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 0.55rem; }
+    .alert-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .alert-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+    .table-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead { background: #f9fafb; }
+    thead th { padding: 0.65rem 1rem; text-align: left; font-weight: 700; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); }
+    tbody td { padding: 0.8rem 1rem; border-bottom: 1px solid #f3f4f6; color: var(--text-soft); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+    .table-empty { text-align: center; padding: 2.5rem; color: var(--text-muted); }
+
+    .badge { display: inline-flex; align-items: center; padding: 0.17rem 0.55rem; border-radius: 999px; font-size: 0.69rem; font-weight: 700; }
+    .badge-blue  { background: #eff6ff; color: #1d4ed8; }
+    .badge-green { background: #f0fdf4; color: #166534; }
+    .badge-amber { background: #fffbeb; color: #92400e; }
+
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; }
+    .spinner.dark { border-color: rgba(91,91,214,.2); border-top-color: var(--purple); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #toast-container { position: fixed; top: 1.2rem; right: 1.2rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.45rem; }
+    .toast { background: white; border-radius: 11px; box-shadow: 0 8px 26px rgba(0,0,0,.11); padding: 0.82rem 1.15rem; display: flex; align-items: center; gap: 0.65rem; min-width: 240px; font-size: 0.84rem; font-weight: 600; border-left: 4px solid; animation: slideIn .3s ease; }
+    .toast.success { border-color: #22c55e; color: #166534; }
+    .toast.error   { border-color: #dc2626; color: #991b1b; }
+    .toast.info    { border-color: var(--purple); }
+    @keyframes slideIn { from { transform: translateX(110%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+
+    .d-none { display: none !important; }
+
+    /* Logout button */
+    .logout-btn {
+      display: flex; align-items: center; gap: 0.55rem;
+      padding: 0.58rem 1.2rem; margin: 0.5rem 0.8rem;
+      border-radius: 10px; font-family: inherit; font-size: 0.8rem;
+      font-weight: 700; cursor: pointer; border: 1px solid #fecaca;
+      background: #fff5f5; color: #dc2626; transition: background 0.15s;
+      width: calc(100% - 1.6rem);
+    }
+    .logout-btn:hover { background: #fee2e2; }
+    .logout-btn svg { width: 14px; height: 14px; stroke: #dc2626; }
+
+    @media (max-width: 820px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; }
+      .nav-brand { display: none; }
+      .action-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-brand-logo">
+      <svg viewBox="0 0 60 60" fill="none">
+        <ellipse cx="30" cy="14" rx="7" ry="7" fill="#c4b5fd"/>
+        <path d="M15 44 Q20 28 30 28 Q40 28 45 44" fill="#c4b5fd"/>
+        <ellipse cx="39" cy="21" rx="5" ry="5" fill="#a78bfa"/>
+      </svg>
+    </div>
+    <div class="nbt">
+      <div class="top">RSIA</div>
+      <div class="name">AL HASANAH</div>
+      <div class="sub">MADIUN</div>
+    </div>
+  </div>
+
+  <div class="nav-center">
+    <div class="app-name">SmartERM <span class="ai-badge">AI</span></div>
+    <span class="workspace-label">Doctor Workspace</span>
+  </div>
+
+  <div class="nav-right">
+    <div class="user-info">
+      <div class="user-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="um">
+        <div class="uname">dr. <span id="user-name">Amanda Rizky Yorina Prayoga</span></div>
+        <div class="urole">Dokter</div>
+      </div>
+      <button class="chevron-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    <div class="notif-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <div class="notif-dot"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sb-title">Menu Dokter</div>
+
+  <nav class="sb-nav">
+    <button class="sb-link active" onclick="showSection('dashboard')">
+      <div class="licon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+      </div>Dashboard
+    </button>
+
+    <button class="sb-link" onclick="showSection('pasien')">
+      <div class="licon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </div>Cari Pasien
+    </button>
+
+    <button class="sb-link" onclick="showSection('daftar-pasien')">
+      <div class="licon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>Daftar Pasien
+    </button>
+
+    <a class="sb-link" href="recorder.html">
+      <div class="licon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>Rekam &amp; Proses AI
+    </a>
+  </nav>
+
+  <div class="sb-bottom">
+    <div class="sb-infocard">
+      <div class="sw">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="it">Sistem Internal</div>
+        <div class="in">RSIA AL Hasanah Madiun</div>
+        <div class="id">Semua data pasien dilindungi sesuai kebijakan internal.</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="logout-btn" onclick="doLogout()">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Keluar
+  </button>
+
+  <div class="sb-footer">
+    <p>© 2025 RSIA AL Hasanah Madiun<br>SmartERM v1.0.0</p>
+  </div>
+</aside>
+
+<!-- ══ MAIN CONTENT ══ -->
+<main class="main-content">
+
+  <!-- DASHBOARD -->
+  <section id="sec-dashboard">
+    <div class="page-header">
+      <h2>Selamat Datang! 👋</h2>
+      <p id="welcome-sub">— pilih tindakan yang ingin kamu lakukan hari ini.</p>
+    </div>
+
+    <div class="action-grid">
+
+      <div class="action-card card-purple" onclick="window.location.href='recorder.html'">
+        <div class="card-top">
+          <div class="cic">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </div>
+          <div class="ca">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+        </div>
+        <div><div class="ctitle">Rekam Konsultasi</div><div class="cdesc">Rekam suara lalu AI otomatis buat rekam medis</div></div>
+      </div>
+
+      <div class="action-card card-teal" onclick="showSection('pasien')">
+        <div class="card-top">
+          <div class="cic">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <div class="ca">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+        </div>
+        <div><div class="ctitle">Cari Pasien</div><div class="cdesc">Cari data &amp; riwayat berobat pasien</div></div>
+      </div>
+
+      <div class="action-card card-white" onclick="showSection('daftar-pasien')">
+        <div class="card-top">
+          <div class="cic">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </div>
+          <div class="ca">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+        </div>
+        <div><div class="ctitle">Daftar Pasien Baru</div><div class="cdesc">Input data pasien baru ke sistem</div></div>
+      </div>
+
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div>
+        <div class="tip-title">Cara menggunakan fitur AI:</div>
+        <div class="tip-steps">
+          Klik <span class="link">"Rekam Konsultasi"</span> → rekam suara saat konsultasi dengan pasien → upload →<br>
+          AI akan otomatis mengisi form rekam medis → edit jika perlu → submit → unduh PDF.
+        </div>
+      </div>
+      <div class="tip-deco">
+        <svg viewBox="0 0 80 80" fill="none">
+          <rect x="10" y="8" width="44" height="56" rx="6" fill="#5b5bd6"/>
+          <rect x="18" y="18" width="28" height="4" rx="2" fill="white" opacity="0.6"/>
+          <rect x="18" y="26" width="20" height="4" rx="2" fill="white" opacity="0.4"/>
+          <rect x="18" y="34" width="24" height="4" rx="2" fill="white" opacity="0.4"/>
+          <circle cx="58" cy="54" r="16" fill="#a78bfa"/>
+          <text x="50" y="59" font-size="14" font-weight="800" fill="white" font-family="sans-serif">AI</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARI PASIEN -->
+  <section id="sec-pasien" class="d-none">
+    <div class="page-header">
+      <h2>🔍 Cari Pasien</h2>
+      <p>Cari berdasarkan nama atau nomor rekam medis.</p>
+    </div>
+    <div class="card">
+      <div style="display:flex;gap:.75rem;align-items:flex-end;">
+        <div class="form-group" style="flex:1;margin:0;">
+          <label class="form-label">Cari berdasarkan Nama</label>
+          <input type="text" id="search-nama" class="form-control" placeholder="Ketik nama pasien..."/>
+        </div>
+        <button class="btn btn-primary" onclick="doCariNama()">Cari</button>
+      </div>
+      <div style="margin-top:.75rem;display:flex;gap:.75rem;align-items:flex-end;">
+        <div class="form-group" style="flex:1;margin:0;">
+          <label class="form-label">Atau cari berdasarkan No. Rekam Medis</label>
+          <input type="text" id="search-rm" class="form-control" placeholder="Contoh: RM2024001"/>
+        </div>
+        <button class="btn btn-outline" onclick="doCariRM()">Cari</button>
+      </div>
+    </div>
+    <div id="hasil-cari" class="d-none"></div>
+    <div id="detail-pasien" class="d-none"></div>
+  </section>
+
+  <!-- DAFTAR PASIEN -->
+  <section id="sec-daftar-pasien" class="d-none">
+    <div class="page-header">
+      <h2>➕ Daftar Pasien Baru</h2>
+      <p>Input data pasien baru ke dalam sistem.</p>
+    </div>
+    <div class="card" style="max-width:660px;">
+      <div id="alert-pasien" class="d-none"></div>
+      <div id="success-pasien" class="d-none"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nama Pasien <span class="required">*</span></label>
+          <input type="text" id="p-nama" class="form-control" placeholder="Nama lengkap pasien"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. Rekam Medis <span class="required">*</span></label>
+          <input type="text" id="p-no-rm" class="form-control" placeholder="RM2024001"/>
+          <p class="form-hint">Format: RM + tahun + nomor urut</p>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tanggal Lahir <span class="required">*</span></label>
+          <input type="date" id="p-tgl-lahir" class="form-control"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jenis Kelamin <span class="required">*</span></label>
+          <select id="p-jk" class="form-control">
+            <option value="">-- Pilih --</option>
+            <option value="L">Laki-laki</option>
+            <option value="P">Perempuan</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">NIK</label>
+          <input type="text" id="p-nik" class="form-control" placeholder="16 digit NIK (opsional)" maxlength="16"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. Telepon</label>
+          <input type="text" id="p-telp" class="form-control" placeholder="08xxxxxxxxxx"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alamat</label>
+        <textarea id="p-alamat" class="form-control" placeholder="Alamat lengkap (opsional)" rows="2"></textarea>
+      </div>
+      <div style="display:flex;gap:.75rem;">
+        <button class="btn btn-primary" id="btn-daftar-pasien" onclick="doDaftarPasien()">Simpan Data Pasien</button>
+        <button class="btn btn-secondary" onclick="showSection('dashboard')">Batal</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast-container"></div>
+
+<script>
+  /* ─ helpers ─ */
+  function showToast(msg, type) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'toast ' + (type||'info');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  function showSection(name) {
+    document.querySelectorAll('main section').forEach(s => s.classList.add('d-none'));
+    document.getElementById('sec-' + name).classList.remove('d-none');
+    document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+    const map = { dashboard:0, pasien:1, 'daftar-pasien':2 };
+    if (map[name] !== undefined)
+      document.querySelectorAll('.sb-link')[map[name]]?.classList.add('active');
+  }
+
+  /* ─ PENTING: bersihkan localStorage lama ─
+     Jika role dokter masih tersimpan dari sesi sebelumnya,
+     hapus agar tidak auto-redirect tak terbatas            */
+  function doLogout() {
+    if (confirm('Yakin ingin keluar?')) {
+      localStorage.removeItem('role');
+      localStorage.removeItem('token');
+      localStorage.removeItem('session');
+      window.location.href = '../index.html';
+    }
+  }
+
+  /* ─ Cari pasien ─ */
+  async function doCariNama() {
+    const nama = document.getElementById('search-nama').value.trim();
+    if (!nama) { showToast('Masukkan nama pasien dulu.', 'error'); return; }
+    const container = document.getElementById('hasil-cari');
+    document.getElementById('detail-pasien').classList.add('d-none');
+    container.classList.remove('d-none');
+    container.innerHTML = `<div class="card"><div class="table-empty"><span class="spinner dark"></span> Mencari...</div></div>`;
+    try {
+      const { cariPasien } = await import('../js/api.js');
+      const { formatDate } = await import('../js/ui.js');
+      const data = await cariPasien(nama);
+      if (!data.data || !data.data.length) {
+        container.innerHTML = `<div class="alert alert-warning">Tidak ada pasien dengan nama "<strong>${nama}</strong>".</div>`; return;
+      }
+      container.innerHTML = `<div class="card"><div class="card-header"><h3>Hasil (${data.total})</h3></div><div class="table-wrapper"><table><thead><tr><th>No. RM</th><th>Nama</th><th>Tgl Lahir</th><th>Telp</th><th>Aksi</th></tr></thead><tbody>${data.data.map(p=>`<tr><td><code>${p.no_rekam_medis}</code></td><td><strong>${p.nama_pasien}</strong></td><td>${formatDate(p.tanggal_lahir)}</td><td>${p.no_telepon||'-'}</td><td><button class="btn btn-outline btn-sm" onclick="lihatDetailPasien('${p.no_rekam_medis}')">Lihat</button></td></tr>`).join('')}</tbody></table></div></div>`;
+    } catch(e) { container.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`; }
+  }
+  window.doCariNama = doCariNama;
+
+  async function doCariRM() {
+    const rm = document.getElementById('search-rm').value.trim();
+    if (!rm) { showToast('Masukkan No. RM dulu.', 'error'); return; }
+    await lihatDetailPasien(rm);
+  }
+  window.doCariRM = doCariRM;
+
+  async function lihatDetailPasien(no_rm) {
+    const dc = document.getElementById('detail-pasien');
+    dc.classList.remove('d-none');
+    dc.innerHTML = `<div class="card"><div class="table-empty"><span class="spinner dark"></span> Memuat...</div></div>`;
+    try {
+      const { getPasien } = await import('../js/api.js');
+      const { formatDate, formatDateTime, hitungUmur } = await import('../js/ui.js');
+      const data = await getPasien(no_rm);
+      const p = data.data_pasien;
+      dc.innerHTML = `<div class="card"><div class="card-header"><h3>👤 ${p.nama_pasien}</h3><span class="badge badge-blue">No. RM: ${p.no_rekam_medis}</span></div><div class="form-row" style="margin-bottom:1rem;"><div><small style="color:var(--text-muted);font-size:.73rem;">Tgl Lahir</small><p><strong>${formatDate(p.tanggal_lahir)}</strong> (${hitungUmur(p.tanggal_lahir)})</p></div><div><small style="color:var(--text-muted);font-size:.73rem;">JK</small><p><strong>${p.jenis_kelamin==='L'?'♂ Laki-laki':'♀ Perempuan'}</strong></p></div><div><small style="color:var(--text-muted);font-size:.73rem;">NIK</small><p>${p.nik||'-'}</p></div><div><small style="color:var(--text-muted);font-size:.73rem;">Telepon</small><p>${p.no_telepon||'-'}</p></div></div><div style="border-top:1px solid var(--border);padding-top:1rem;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;"><h4 style="font-size:.9rem;">🗂️ Riwayat (${data.total_kunjungan}x)</h4><a href="recorder.html?rm=${p.no_rekam_medis}" class="btn btn-primary btn-sm">🎙️ Rekam Baru</a></div>${data.riwayat_berobat.length===0?'<p style="color:var(--text-muted);font-size:.83rem;">Belum ada rekam medis.</p>':`<div class="table-wrapper"><table><thead><tr><th>Waktu</th><th>Diagnosa</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${data.riwayat_berobat.map(r=>`<tr><td>${formatDateTime(r.waktu_pemeriksaan)}</td><td>${r.diagnosa_utama||'-'}</td><td><span class="badge ${r.status_record==='final'?'badge-green':'badge-amber'}">${r.status_record}</span></td><td><a href="anamnesis.html?id=${r.id_record}&mode=view" class="btn btn-outline btn-sm">Lihat</a></td></tr>`).join('')}</tbody></table></div>`}</div></div>`;
+    } catch(e) { dc.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`; }
+  }
+  window.lihatDetailPasien = lihatDetailPasien;
+
+  async function doDaftarPasien() {
+    const ab = document.getElementById('alert-pasien');
+    const sb = document.getElementById('success-pasien');
+    const btn = document.getElementById('btn-daftar-pasien');
+    const payload = {
+      nama_pasien: document.getElementById('p-nama').value.trim(),
+      no_rekam_medis: document.getElementById('p-no-rm').value.trim(),
+      tanggal_lahir: document.getElementById('p-tgl-lahir').value,
+      jenis_kelamin: document.getElementById('p-jk').value,
+      nik: document.getElementById('p-nik').value.trim()||null,
+      no_telepon: document.getElementById('p-telp').value.trim()||null,
+      alamat: document.getElementById('p-alamat').value.trim()||null
+    };
+    ab.classList.add('d-none'); sb.classList.add('d-none');
+    if (!payload.nama_pasien||!payload.no_rekam_medis||!payload.tanggal_lahir||!payload.jenis_kelamin) {
+      ab.className='alert alert-error'; ab.innerHTML='⚠️ Nama, No. RM, Tanggal Lahir, dan JK wajib diisi.'; ab.classList.remove('d-none'); return;
+    }
+    btn.disabled=true; btn.innerHTML=`<span class="spinner"></span> Menyimpan...`;
+    try {
+      const { daftarPasien } = await import('../js/api.js');
+      await daftarPasien(payload);
+      sb.className='alert alert-success'; sb.innerHTML=`✅ Pasien <strong>${payload.nama_pasien}</strong> berhasil didaftarkan.`; sb.classList.remove('d-none');
+      showToast('Pasien berhasil didaftarkan!','success');
+      ['p-nama','p-no-rm','p-tgl-lahir','p-nik','p-telp','p-alamat'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('p-jk').value='';
+    } catch(e) {
+      ab.className='alert alert-error'; ab.innerHTML=`❌ ${e.message}`; ab.classList.remove('d-none');
+    } finally { btn.disabled=false; btn.innerHTML='Simpan Data Pasien'; }
+  }
+  window.doDaftarPasien = doDaftarPasien;
+</script>
+
+<script type="module">
+  /* Auth guard — graceful fallback jika file tidak ada */
+  try {
+    const { guardPage, getSession } = await import('../js/auth.js');
+    guardPage('dokter');
+    const sesi = getSession();
+    const nama = sesi?.nama_lengkap || sesi?.nama || '';
+    if (nama) {
+      document.getElementById('user-name').textContent = nama;
+      document.getElementById('welcome-sub').textContent =
+        `${nama} — pilih tindakan yang ingin kamu lakukan hari ini.`;
+    }
+  } catch(e) {
+    console.warn('auth.js tidak ditemukan, mode demo aktif.');
+  }
+</script>
+
+</body>
+</html>

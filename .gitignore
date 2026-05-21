@@ -9,8 +9,10 @@ __pycache__/
 
 # Virtual environment
 venv/
-env/
-
+venv/
+__pycache__/
+temp_files/
+.env
 # File audio temporary (upload dokter)
 temp_files/
 

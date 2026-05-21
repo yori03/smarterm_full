@@ -1,57 +1,37 @@
 """
-auth.py - Fungsi Kriptografi & Token JWT
+auth.py - Kriptografi Password & Pembuatan JWT Token
 
-Analogi: Ini seperti bagian SECURITY SISTEM.
-- Fungsi hash password = mesin penghancur dokumen (password asli → kode acak)
-- Fungsi verify = mesin pencocok sidik jari
-- Fungsi create_token = mesin cetak kartu akses (badge)
+Fungsi:
+    get_password_hash()   : ubah password biasa → hash bcrypt (tidak bisa dikembalikan)
+    verify_password()     : cocokkan password input dengan hash di database
+    create_access_token() : buat JWT token yang dikirim ke client setelah login
 """
 
-import os
-from passlib.context import CryptContext
 from jose import jwt
-from dotenv import load_dotenv
+from passlib.context import CryptContext
 
-load_dotenv()
+from config import ALGORITHM, SECRET_KEY
 
-# Ambil konfigurasi dari .env
-SECRET_KEY = os.getenv("SECRET_KEY", "ganti_ini_di_env_ya")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-
-# Mesin enkripsi password (bcrypt = algoritma paling aman untuk password)
+# Mesin enkripsi password — bcrypt adalah algoritma paling aman untuk password
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def get_password_hash(password: str) -> str:
-    """
-    Ubah password biasa → kode hash.
-    Contoh: "password123" → "$2b$12$xyzabc..."
-    Password asli TIDAK BISA dikembalikan dari hash ini (one-way).
-    """
+    """Ubah password biasa menjadi hash bcrypt untuk disimpan di database."""
     return pwd_context.hash(password)
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Cocokkan password yang diketik user dengan hash di database.
-    Return True kalau cocok, False kalau tidak.
-    """
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(password_biasa: str, password_hash: str) -> bool:
+    """Cocokkan password yang diketik user dengan hash yang tersimpan di database."""
+    return pwd_context.verify(password_biasa, password_hash)
 
 
 def create_access_token(data: dict) -> str:
     """
-    Buat JWT Token (kartu akses digital).
-    
-    Token berisi: username + role → di-encode jadi string panjang.
-    Contoh output: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-    
-    Token ini dikirim ke HP dokter dan dipakai untuk setiap request
-    (seperti badge yang di-scan setiap masuk ruangan).
-    
-    Catatan: Token ini TIDAK expired (sesuai .env lama kamu).
-    Kalau mau ditambah expired, tambahkan 'exp' ke payload.
+    Buat JWT token dari data payload (berisi username + role).
+    Token ini dikirim ke client dan dipakai sebagai bukti login di setiap request.
+
+    Catatan: token tidak memiliki masa berlaku (tidak expired).
+    Tambahkan key 'exp' ke payload jika ingin membatasi masa aktif token.
     """
-    to_encode = data.copy()
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(data.copy(), SECRET_KEY, algorithm=ALGORITHM)

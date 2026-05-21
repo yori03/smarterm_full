@@ -1,159 +1,151 @@
 """
-ai_services.py - Semua Logika AI (Whisper + Llama 3)
+ai_services.py - Layanan AI (Whisper + Llama 3 via Groq)
 
-Analogi: Ini seperti LABORATORIUM AI.
-- compress_audio() = mesin kompresi file besar
-- transcribe_audio() = mesin penerjemah suara → teks (Whisper)
-- parse_medical_text() = dokter AI yang baca teks → JSON medis (Llama 3)
+Berisi semua logika pemrosesan AI:
+    compress_audio()     : kompres file audio > 24MB menggunakan FFmpeg
+    transcribe_audio()   : kirim audio ke Whisper → teks transkripsi Bahasa Indonesia
+    parse_medical_text() : kirim teks ke Llama 3 → JSON data medis terstruktur
 
-Kenapa dipisah?
-→ Kalau mau ganti model AI (misal dari Groq ke OpenAI),
-  cukup edit file ini, tidak perlu otak-atik router/endpoint.
+Memisahkan logika AI ke file ini memudahkan penggantian provider AI
+(misal dari Groq ke OpenAI) tanpa perlu menyentuh kode router sama sekali.
 """
 
-import os
 import json
+import os
 import subprocess
+from typing import Optional
+
 from groq import Groq
-from dotenv import load_dotenv
 
-load_dotenv()
+from config import GROQ_API_KEY
 
-# Inisialisasi client Groq (koneksi ke server AI Groq)
-# Groq adalah platform yang nyediain Whisper + Llama 3 dengan kecepatan tinggi
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# Koneksi ke Groq — penyedia API Whisper & Llama 3 dengan latensi rendah
+klien_groq = Groq(api_key=GROQ_API_KEY)
+
+# Batas ukuran file sebelum dikompres (Whisper API max 25MB, pakai 24MB sebagai buffer)
+BATAS_UKURAN_MB = 24
+
+# Instruksi sistem untuk Llama 3 — menentukan cara AI mengekstrak data medis
+PROMPT_SISTEM_MEDIS = """
+Anda adalah Asisten Medis Spesialis Obgyn (Kandungan) RSIA Al Hasanah.
+Tugas: Ekstrak informasi penting dari percakapan dokter-pasien menjadi JSON.
+
+KOLOM YANG WAJIB DIISI:
+- keluhan_utama              : Apa yang dirasakan pasien?
+- riwayat_penyakit_sekarang  : Detail keluhan dan kronologi.
+- riwayat_penyakit_keluarga  : Penyakit turunan (jika disebutkan).
+- hpht                       : Hari Pertama Haid Terakhir (YYYY-MM-DD atau null).
+- hpl                        : Perkiraan Tanggal Lahir (YYYY-MM-DD atau null).
+- tekanan_darah              : Contoh format '120/80'.
+- nadi                       : Contoh format '80x/menit'.
+- suhu                       : Contoh format '36.5'.
+- pemeriksaan_fisik_lengkap  : Narasi pemeriksaan fisik lengkap.
+- diagnosa_utama             : Kesimpulan diagnosis medis.
+- rencana_layanan            : Tindakan selanjutnya / rencana pengobatan.
+- resep_obat                 : Daftar obat yang diresepkan dokter.
+- edukasi_pasien             : Nasihat / edukasi dokter kepada pasien.
+
+ATURAN WAJIB:
+1. Output HANYA berupa JSON. Tidak ada kata pembuka/penutup sama sekali.
+2. Jika data tidak disebutkan dalam percakapan, isi dengan null (bukan string kosong).
+3. Perbaiki ejaan nama obat jika terdengar salah dalam transkripsi.
+4. Interpretasikan konteks medis dengan benar (contoh: 'tensi' = tekanan_darah).
+"""
 
 
-def compress_audio(file_path: str) -> str:
+def compress_audio(path_file: str) -> str:
     """
-    Cek ukuran file audio. Kalau > 24MB, kompres pakai FFmpeg.
-    
-    Kenapa 24MB? Karena limit Whisper API adalah 25MB.
-    Kita kasih buffer 1MB untuk keamanan.
-    
-    FFmpeg = software gratis untuk olah audio/video di server.
-    Command yang dijalankan:
-      ffmpeg -y -i [input] -ac 1 -ar 16000 -b:a 32k [output]
-      
-      -ac 1     = ubah jadi mono (1 channel, bukan stereo)
-      -ar 16000 = sample rate 16kHz (cukup untuk voice/bicara)
-      -b:a 32k  = bitrate 32kbps (kualitas rendah tapi cukup untuk transkripsi)
-    
-    Return: path file yang siap dikirim ke Whisper
+    Periksa ukuran file audio. Jika melebihi batas, kompres menggunakan FFmpeg.
+
+    Parameter FFmpeg yang digunakan:
+        -ac 1      : ubah ke mono (1 channel) — hemat ukuran, cukup untuk rekaman suara
+        -ar 16000  : sample rate 16kHz
+        -b:a 32k   : bitrate 32kbps
+
+    Returns:
+        Path file yang siap dikirim ke Whisper (file asli atau hasil kompresi).
     """
-    file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
-    print(f"[AUDIO] Ukuran file: {file_size_mb:.2f} MB")
+    ukuran_mb = os.path.getsize(path_file) / (1024 * 1024)
+    print(f"[AUDIO] Ukuran file: {ukuran_mb:.2f} MB")
 
-    if file_size_mb <= 24:
-        print("[AUDIO] Ukuran OK, tidak perlu kompres.")
-        return file_path
+    if ukuran_mb <= BATAS_UKURAN_MB:
+        print("[AUDIO] Ukuran OK, tidak perlu dikompres.")
+        return path_file
 
-    print("[AUDIO] File terlalu besar! Mengompres via FFmpeg...")
+    print("[AUDIO] File terlalu besar, mengompres via FFmpeg...")
 
-    # Buat nama file output: "rekaman.mp3" → "rekaman_compressed.mp3"
-    base, ext = os.path.splitext(file_path)
-    compressed_path = f"{base}_compressed{ext}"
+    nama_dasar, ekstensi = os.path.splitext(path_file)
+    path_hasil_kompres   = f"{nama_dasar}_compressed{ekstensi}"
 
-    command = [
-        "ffmpeg", "-y",           # -y = overwrite kalau file sudah ada
-        "-i", file_path,           # input file
-        "-ac", "1",                # mono
-        "-ar", "16000",            # sample rate 16kHz
-        "-b:a", "32k",             # bitrate 32kbps
-        compressed_path            # output file
+    perintah_ffmpeg = [
+        "ffmpeg", "-y",
+        "-i", path_file,
+        "-ac", "1",
+        "-ar", "16000",
+        "-b:a", "32k",
+        path_hasil_kompres,
     ]
 
     try:
         subprocess.run(
-            command,
+            perintah_ffmpeg,
             check=True,
-            stdout=subprocess.DEVNULL,  # Sembunyikan output FFmpeg
-            stderr=subprocess.DEVNULL
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
-        new_size = os.path.getsize(compressed_path) / (1024 * 1024)
-        print(f"[AUDIO] Berhasil dikompres: {new_size:.2f} MB")
-        return compressed_path
+        ukuran_baru = os.path.getsize(path_hasil_kompres) / (1024 * 1024)
+        print(f"[AUDIO] Kompresi berhasil: {ukuran_baru:.2f} MB")
+        return path_hasil_kompres
 
     except subprocess.CalledProcessError as e:
-        print(f"[AUDIO] Gagal kompres: {e}. Pakai file asli.")
-        return file_path  # Fallback ke file asli kalau FFmpeg error
+        print(f"[AUDIO] Kompresi gagal: {e}. Menggunakan file asli.")
+        return path_file
 
-
-def transcribe_audio(audio_path: str) -> str:
+def transcribe_audio(path_audio: str) -> str:
     """
-    Kirim file audio ke Whisper AI → dapat teks transkripsi.
-    
-    Whisper = Model AI buatan OpenAI, sangat bagus untuk transkripsi bahasa Indonesia.
-    Kita pakai versi whisper-large-v3 via Groq (lebih cepat dari OpenAI langsung).
-    
-    Return: String teks hasil transkripsi
+    Kirim file audio ke Whisper AI dan dapatkan teks transkripsinya.
+
+    Menggunakan model whisper-large-v3 via Groq, dipaksa menggunakan Bahasa Indonesia.
+
+    Returns:
+        Teks hasil transkripsi dalam Bahasa Indonesia.
     """
     print("[AI] Mengirim audio ke Whisper...")
 
-    with open(audio_path, "rb") as audio_file:
-        transkripsi = client.audio.transcriptions.create(
-            file=(audio_path, audio_file.read()),
+    with open(path_audio, "rb") as f:
+        hasil = klien_groq.audio.transcriptions.create(
+            file=(path_audio, f.read()),
             model="whisper-large-v3",
-            language="id",              # Paksa Bahasa Indonesia
-            response_format="json"
+            language="id",
+            response_format="json",
         )
 
-    teks = transkripsi.text
+    teks = hasil.text
     print(f"[AI] Transkripsi selesai: '{teks[:80]}...'")
     return teks
 
-
-def parse_medical_text(teks_mentah: str) -> dict:
+def parse_medical_text(teks_transkripsi: str) -> dict:
     """
-    Kirim teks transkripsi ke Llama 3 → dapat JSON data medis terstruktur.
-    
-    Llama 3 = Model AI buatan Meta (Facebook), sangat pintar memahami konteks.
-    temperature=0.1 = output lebih konsisten/deterministik (tidak kreatif-kreatif)
-    response_format json_object = paksa output JSON valid
-    
-    System prompt dirancang khusus untuk konteks RSIA (Rumah Sakit Ibu & Anak)
-    dengan kolom-kolom yang sesuai schema database kita.
-    
-    Return: Dictionary (dict) berisi data medis terstruktur
+    Kirim teks transkripsi ke Llama 3 dan dapatkan data medis dalam format JSON.
+
+    Menggunakan temperature=0.1 agar output konsisten dan tidak terlalu "kreatif".
+    Response dipaksa dalam format JSON object yang valid.
+
+    Returns:
+        Dictionary berisi data medis terstruktur sesuai format SOAP.
     """
     print("[AI] Menganalisis teks dengan Llama 3...")
 
-    system_prompt = """
-    Anda adalah Asisten Medis Spesialis Obgyn (Kandungan) RSIA Al Hasanah.
-    Tugas: Ekstrak informasi penting dari percakapan dokter-pasien menjadi JSON.
-    
-    KOLOM YANG WAJIB DIISI:
-    - keluhan_utama: Apa yang dirasakan pasien?
-    - riwayat_penyakit_sekarang: Detail keluhan dan kronologi.
-    - riwayat_penyakit_keluarga: Penyakit turunan (jika disebutkan).
-    - hpht: Hari Pertama Haid Terakhir (Format YYYY-MM-DD atau null).
-    - hpl: Perkiraan Tanggal Lahir (Format YYYY-MM-DD atau null).
-    - tekanan_darah: Contoh format '120/80'.
-    - nadi: Contoh format '80x/menit'.
-    - suhu: Contoh format '36.5'.
-    - pemeriksaan_fisik_lengkap: Narasi pemeriksaan fisik lengkap.
-    - diagnosa_utama: Kesimpulan diagnosis medis.
-    - rencana_layanan: Tindakan selanjutnya / rencana pengobatan.
-    - resep_obat: Daftar obat yang diresepkan dokter.
-    - edukasi_pasien: Nasihat / edukasi dokter kepada pasien.
-
-    ATURAN WAJIB:
-    1. Output HANYA berupa JSON. Tidak ada kata pembuka/penutup sama sekali.
-    2. Jika data tidak disebutkan dalam percakapan, isi dengan null (bukan string kosong).
-    3. Perbaiki ejaan nama obat jika terdengar salah dalam transkripsi.
-    4. Interpretasikan konteks medis dengan benar (contoh: 'tensi' = tekanan_darah).
-    """
-
-    completion = client.chat.completions.create(
+    respons = klien_groq.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Analisa percakapan medis ini dan ekstrak datanya: '{teks_mentah}'"}
+            {"role": "system", "content": PROMPT_SISTEM_MEDIS},
+            {"role": "user",   "content": f"Analisa percakapan medis ini dan ekstrak datanya: '{teks_transkripsi}'"},
         ],
         temperature=0.1,
-        response_format={"type": "json_object"}  # Paksa output JSON valid
+        response_format={"type": "json_object"},
     )
 
-    hasil_json = json.loads(completion.choices[0].message.content)
-    print("[AI] Parsing Llama 3 selesai.")
-    return hasil_json
+    data_medis = json.loads(respons.choices[0].message.content)
+    print("[AI] Analisis Llama 3 selesai.")
+    return data_medis

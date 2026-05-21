@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Form Rekam Medis — SmartERM</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .form-page { max-width: 820px; margin: 0 auto; }
+    .transkrip-box {
+      background: var(--blue-50);
+      border: 1px solid var(--blue-100);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .transkrip-box h4 { color: var(--blue-800); font-size: 0.875rem; margin-bottom: 0.5rem; }
+    .transkrip-box p { color: var(--blue-700); font-size: 0.875rem; font-style: italic; line-height: 1.6; }
+    .ai-indicator {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(20,184,166,0.1); color: var(--teal-500);
+      border-radius: 999px; padding: 0.25rem 0.75rem;
+      font-size: 0.78rem; font-weight: 600;
+    }
+    .sticky-actions {
+      position: sticky; bottom: 0;
+      background: white;
+      border-top: 1px solid var(--gray-200);
+      padding: 1rem 0;
+      display: flex; gap: 0.75rem;
+      margin-top: 1.5rem;
+      z-index: 50;
+    }
+    .field-hint-ai {
+      font-size: 0.72rem; color: var(--teal-500);
+      margin-top: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <div class="logo-icon">🏥</div>
+      SmartERM
+    </div>
+    <div class="navbar-right">
+      <div class="user-badge">👨‍⚕️ dr. <span id="user-name"></span></div>
+      <a href="dashboard-dokter.html" class="btn btn-secondary btn-sm">← Dashboard</a>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="form-page">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+          <h2 id="page-title">📋 Form Rekam Medis</h2>
+          <span class="ai-indicator" id="ai-badge" style="display:none;">🤖 Diisi oleh AI</span>
+        </div>
+        <p id="page-subtitle">Isi atau koreksi data rekam medis pasien.</p>
+      </div>
+
+      <!-- Alert & Success -->
+      <div id="alert-form" class="d-none"></div>
+      <div id="success-form" class="d-none"></div>
+
+      <!-- Transkrip AI -->
+      <div id="transkrip-section" class="transkrip-box d-none">
+        <h4>🎙️ Transkrip Suara (dari Whisper AI)</h4>
+        <p id="transkrip-text"></p>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           FORM REKAM MEDIS
+      ════════════════════════════════════════════ -->
+      <form id="anamnesis-form" onsubmit="return false;">
+
+        <!-- ─── No. Rekam Medis Pasien ─────────────────────── -->
+        <div class="anamnesis-section">
+          <div class="anamnesis-section-header">
+            <span class="icon">🗂️</span>
+            <h4>Identitas Pasien</h4>
+          </div>
+          <div class="anamnesis-section-body">
+            <div class="form-group">
+              <label class="form-label">No. Rekam Medis <span class="required">*</span></label>
+              <input type="text" id="no_rekam_medis" class="form-control" placeholder="Contoh: RM2024001" />
+              <p class="form-hint">Wajib diisi. Pastikan No. RM pasien sudah terdaftar di sistem.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Data Vital ─────────────────────────────────── -->
+        <div class="anamnesis-section">
+          <div class="anamnesis-section-header">
+            <span class="icon">💓</span>
+            <h4>Tanda-Tanda Vital</h4>
+          </div>
+          <div class="anamnesis-section-body">
+            <div class="form-row-3">
+              <div class="form-group">
+                <label class="form-label">Tekanan Darah</label>
+                <input type="text" id="tekanan_darah" class="form-control" placeholder="120/80" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nadi</label>
+                <input type="text" id="nadi" class="form-control" placeholder="80x/menit" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Suhu</label>
+                <input type="text" id="suhu" class="form-control" placeholder="36.5 °C" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Data Subjektif ─────────────────────────────── -->
+        <div class="anamnesis-section">
+          <div class="anamnesis-section-header">
+            <span class="icon">🗣️</span>
+            <h4>Data Subjektif (Anamnesis)</h4>
+          </div>
+          <div class="anamnesis-section-body">
+            <div class="form-group">
+              <label class="form-label">Keluhan Utama</label>
+              <input type="text" id="keluhan_utama" class="form-control" placeholder="Keluhan utama yang disampaikan pasien" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Riwayat Penyakit Sekarang</label>
+              <textarea id="riwayat_penyakit_sekarang" class="form-control" rows="3" placeholder="Detail keluhan, onset, kronologi..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Riwayat Penyakit Keluarga</label>
+              <textarea id="riwayat_penyakit_keluarga" class="form-control" rows="2" placeholder="Penyakit turunan / riwayat keluarga..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Data Kebidanan ─────────────────────────────── -->
+        <div class="anamnesis-section">
+          <div class="anamnesis-section-header">
+            <span class="icon">🤰</span>
+            <h4>Data Kebidanan (Khusus Kandungan)</h4>
+          </div>
+          <div class="anamnesis-section-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">HPHT</label>
+                <input type="date" id="hpht" class="form-control" />
+                <p class="form-hint">Hari Pertama Haid Terakhir</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">HPL</label>
+                <input type="date" id="hpl" class="form-control" />
+                <p class="form-hint">Hari Perkiraan Lahir</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Pemeriksaan Fisik ──────────────────────────── -->
+        <div class="anamnesis-section">
+          <div class="anamnesis-section-header">
+            <span class="icon">🔬</span>
+            <h4>Pemeriksaan Fisik</h4>
+          </div>
+          <div class="anamnesis-section-body">
+            <div class="form-group">
+              <label class="form-label">Pemeriksaan Fisik Lengkap</label>
+              <textarea id="pemeriksaan_fisik_lengkap" class="form-control" rows="4" placeholder="Hasil pemeriksaan fisik dokter..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Assessment & Plan ─────────────────────────── -->
+        <div class="anamnesis-section">
+          <div class="anamnesis-section-header">
+            <span class="icon">📋</span>
+            <h4>Assessment & Plan</h4>
+          </div>
+          <div class="anamnesis-section-body">
+            <div class="form-group">
+              <label class="form-label">Diagnosa Utama</label>
+              <input type="text" id="diagnosa_utama" class="form-control" placeholder="Diagnosis medis utama" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rencana Layanan / Tatalaksana</label>
+              <textarea id="rencana_layanan" class="form-control" rows="2" placeholder="Rencana tindakan selanjutnya..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Resep Obat</label>
+              <textarea id="resep_obat" class="form-control" rows="3" placeholder="Daftar obat yang diresepkan..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Edukasi Pasien</label>
+              <textarea id="edukasi_pasien" class="form-control" rows="2" placeholder="Nasihat / edukasi untuk pasien..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Sticky Actions ────────────────────────────── -->
+        <div class="sticky-actions" id="form-actions">
+          <button class="btn btn-primary" id="btn-submit" onclick="submitForm()">
+            💾 Simpan Rekam Medis
+          </button>
+          <button class="btn btn-success" id="btn-print" style="display:none;" onclick="printPDF()">
+            📄 Unduh / Cetak PDF
+          </button>
+          <button class="btn btn-secondary" onclick="history.back()">Batal</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import { simpanRekamMedis, getRekamMedis } from "../js/api.js";
+    import { guardPage, renderUserInfo, getSession } from "../js/auth.js";
+    import { showToast, formatDateTime } from "../js/ui.js";
+
+    guardPage("dokter");
+    renderUserInfo("user-name");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode    = urlParams.get("mode") || "edit"; // edit | view
+    const idRecord = urlParams.get("id");
+
+    let savedIdRecord = null; // ID setelah berhasil disimpan (untuk PDF)
+
+    // ─── Mode: VIEW (lihat rekam medis yang sudah ada) ─────────
+    if (mode === "view" && idRecord) {
+      loadRekamMedis(idRecord);
+    }
+    // ─── Mode: EDIT (dari hasil AI di sessionStorage) ──────────
+    else if (mode === "edit") {
+      const aiRaw = sessionStorage.getItem("ai_result");
+      const noRmPrefill = sessionStorage.getItem("no_rm_prefill");
+      if (aiRaw) {
+        const aiResult = JSON.parse(aiRaw);
+        fillFormFromAI(aiResult, noRmPrefill);
+        document.getElementById("ai-badge").style.display = "inline-flex";
+        document.getElementById("page-subtitle").textContent =
+          "Data di bawah diisi otomatis oleh AI. Periksa & koreksi jika ada yang salah, lalu klik Simpan.";
+      } else {
+        document.getElementById("page-subtitle").textContent =
+          "Isi form rekam medis secara manual.";
+      }
+      // Bersihkan sessionStorage
+      sessionStorage.removeItem("ai_result");
+      sessionStorage.removeItem("no_rm_prefill");
+    }
+
+    // ─── Isi form dari hasil AI ─────────────────────────────────
+    function fillFormFromAI(result, noRmPrefill) {
+      const dm = result.data_medis || {};
+
+      // Transkrip
+      if (result.transkrip_asli) {
+        document.getElementById("transkrip-section").classList.remove("d-none");
+        document.getElementById("transkrip-text").textContent = result.transkrip_asli;
+      }
+
+      // No. RM dari prefill (dari halaman recorder)
+      if (noRmPrefill) setVal("no_rekam_medis", noRmPrefill);
+
+      // Semua field dari AI
+      const fields = [
+        "tekanan_darah","nadi","suhu",
+        "keluhan_utama","riwayat_penyakit_sekarang","riwayat_penyakit_keluarga",
+        "hpht","hpl",
+        "pemeriksaan_fisik_lengkap",
+        "diagnosa_utama","rencana_layanan","resep_obat","edukasi_pasien"
+      ];
+      fields.forEach(f => {
+        if (dm[f] !== null && dm[f] !== undefined) setVal(f, dm[f]);
+      });
+    }
+
+    // ─── Load rekam medis (mode view) ──────────────────────────
+    async function loadRekamMedis(id) {
+      try {
+        const data = await getRekamMedis(id);
+        document.getElementById("page-title").textContent = "📋 Detail Rekam Medis";
+        document.getElementById("page-subtitle").textContent =
+          `Pasien: ${data.pasien || "-"} • Dokter: ${data.dokter || "-"} • ${formatDateTime(data.waktu_pemeriksaan)}`;
+
+        const dm = data.data_medis;
+        setVal("no_rekam_medis", data.no_rekam_medis || "");
+        Object.entries(dm).forEach(([k, v]) => {
+          if (v !== null && v !== undefined) setVal(k, v);
+        });
+
+        // View mode: readonly
+        document.querySelectorAll("#anamnesis-form input, #anamnesis-form textarea, #anamnesis-form select").forEach(el => {
+          el.setAttribute("readonly", true);
+          el.classList.add("readonly");
+        });
+        document.getElementById("btn-submit").style.display = "none";
+        document.getElementById("btn-print").style.display = "inline-flex";
+        savedIdRecord = id;
+
+      } catch (err) {
+        showToast("Gagal memuat rekam medis: " + err.message, "error");
+      }
+    }
+
+    // ─── Submit form ke backend ─────────────────────────────────
+    window.submitForm = async function() {
+      const alertBox = document.getElementById("alert-form");
+      const successBox = document.getElementById("success-form");
+      const btn = document.getElementById("btn-submit");
+
+      alertBox.classList.add("d-none");
+      successBox.classList.add("d-none");
+
+      const no_rm = document.getElementById("no_rekam_medis").value.trim();
+      if (!no_rm) {
+        alertBox.className = "alert alert-error";
+        alertBox.innerHTML = "⚠️ No. Rekam Medis wajib diisi sebelum menyimpan.";
+        alertBox.classList.remove("d-none");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const payload = {
+        no_rekam_medis: no_rm,
+        tekanan_darah: getVal("tekanan_darah") || null,
+        nadi:          getVal("nadi") || null,
+        suhu:          getVal("suhu") || null,
+        keluhan_utama: getVal("keluhan_utama") || null,
+        riwayat_penyakit_sekarang:  getVal("riwayat_penyakit_sekarang") || null,
+        riwayat_penyakit_keluarga:  getVal("riwayat_penyakit_keluarga") || null,
+        hpht: getVal("hpht") || null,
+        hpl:  getVal("hpl")  || null,
+        pemeriksaan_fisik_lengkap:  getVal("pemeriksaan_fisik_lengkap") || null,
+        diagnosa_utama: getVal("diagnosa_utama") || null,
+        rencana_layanan: getVal("rencana_layanan") || null,
+        resep_obat:     getVal("resep_obat") || null,
+        edukasi_pasien: getVal("edukasi_pasien") || null
+      };
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span> Menyimpan...`;
+
+      try {
+        const res = await simpanRekamMedis(payload);
+        savedIdRecord = res.id_record;
+
+        successBox.className = "alert alert-success";
+        successBox.innerHTML = `
+          ✅ <strong>Rekam medis berhasil disimpan!</strong><br>
+          Pasien: <strong>${res.pasien}</strong> • Dokter: <strong>${res.dokter}</strong><br>
+          ID Record: <strong>${res.id_record}</strong> • ${formatDateTime(res.waktu)}
+        `;
+        successBox.classList.remove("d-none");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        // Tampilkan tombol PDF
+        document.getElementById("btn-print").style.display = "inline-flex";
+        showToast("Rekam medis berhasil disimpan!", "success");
+
+      } catch (err) {
+        alertBox.className = "alert alert-error";
+        alertBox.innerHTML = `❌ <strong>Gagal menyimpan:</strong> ${err.message}`;
+        alertBox.classList.remove("d-none");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "💾 Simpan Rekam Medis";
+      }
+    };
+
+    // ─── Print / Unduh PDF ──────────────────────────────────────
+    window.printPDF = function() {
+      if (savedIdRecord) {
+        window.open(`cetak-rm.html?id=${savedIdRecord}`, "_blank");
+      } else {
+        // Fallback: cetak halaman ini
+        window.print();
+      }
+    };
+
+    // ─── Helpers ───────────────────────────────────────────────
+    function setVal(id, val) {
+      const el = document.getElementById(id);
+      if (el && val !== null && val !== undefined) el.value = val;
+    }
+    function getVal(id) {
+      const el = document.getElementById(id);
+      return el ? el.value.trim() : "";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rekam Konsultasi — SmartERM</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .recorder-page { max-width: 680px; margin: 0 auto; }
+    .step-indicator {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 2rem;
+    }
+    .step {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.82rem; font-weight: 600;
+      padding: 0.5rem 1rem;
+      color: var(--gray-400);
+    }
+    .step.active { color: var(--blue-700); }
+    .step.done   { color: var(--teal-500); }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--gray-200); color: var(--gray-500);
+      font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+    }
+    .step.active .step-num { background: var(--blue-600); color: white; }
+    .step.done   .step-num { background: var(--teal-500); color: white; }
+    .step-line { flex: 1; height: 2px; background: var(--gray-200); }
+    .step-line.done { background: var(--teal-500); }
+
+    .no-rm-bar {
+      background: var(--blue-50); border: 1px solid var(--blue-100);
+      border-radius: var(--radius-md); padding: 1rem 1.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;
+    }
+    .no-rm-bar p { color: var(--blue-800); font-size: 0.875rem; margin: 0; }
+    .no-rm-bar strong { color: var(--blue-900); }
+    .audio-preview {
+      background: var(--gray-50); border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md); padding: 1rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .audio-preview audio { flex: 1; }
+
+    /* ── FIX: idle-state & recording-state centering ── */
+    #idle-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      width: 100%;
+      text-align: center;
+    }
+    #idle-state p {
+      margin: 0;
+    }
+    #recording-state {
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <div class="logo-icon">🏥</div>
+      SmartERM
+    </div>
+    <div class="navbar-right">
+      <div class="user-badge">👨‍⚕️ dr. <span id="user-name"></span></div>
+      <a href="dashboard-dokter.html" class="btn btn-secondary btn-sm">← Dashboard</a>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="recorder-page">
+      <div class="page-header">
+        <h2>🎙️ Rekam Konsultasi</h2>
+        <p>Rekam suara konsultasi pasien lalu kirim ke AI untuk diproses otomatis.</p>
+      </div>
+
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step active" id="step-1"><div class="step-num">1</div> Rekam</div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step" id="step-2"><div class="step-num">2</div> Upload</div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step" id="step-3"><div class="step-num">3</div> AI Proses</div>
+        <div class="step-line" id="line-3"></div>
+        <div class="step" id="step-4"><div class="step-num">4</div> Isi Form</div>
+      </div>
+
+      <!-- No RM Bar -->
+      <div class="no-rm-bar">
+        <div>
+          <p>No. Rekam Medis Pasien</p>
+          <input type="text" id="no-rm-input" class="form-control" placeholder="Masukkan No. RM (contoh: RM2024001)" style="margin-top:0.4rem;max-width:280px;" />
+          <p style="font-size:0.78rem;color:var(--gray-500);margin-top:0.25rem;">Wajib diisi sebelum upload ke backend.</p>
+        </div>
+        <div>
+          <small class="text-muted">No. RM bisa juga diisi di form setelah AI selesai.</small>
+        </div>
+      </div>
+
+      <!-- ── PHASE 1: RECORDER ───────────────────────────────── -->
+      <div id="phase-record" class="card" style="padding:0;overflow:hidden;">
+
+        <!-- TAB SELECTOR -->
+        <div style="display:flex;border-bottom:2px solid var(--gray-100);">
+          <button class="tab-btn active" id="tab-record" onclick="switchTab('record')"
+            style="flex:1;padding:0.875rem;font-family:var(--font-body);font-size:0.9rem;font-weight:600;border:none;cursor:pointer;transition:var(--transition);background:var(--blue-50);color:var(--blue-700);border-bottom:2px solid var(--blue-600);margin-bottom:-2px;">
+            🎙️ Rekam Langsung
+          </button>
+          <button class="tab-btn" id="tab-upload" onclick="switchTab('upload')"
+            style="flex:1;padding:0.875rem;font-family:var(--font-body);font-size:0.9rem;font-weight:600;border:none;cursor:pointer;transition:var(--transition);background:transparent;color:var(--gray-500);border-bottom:2px solid transparent;margin-bottom:-2px;">
+            📁 Upload File Audio
+          </button>
+        </div>
+
+        <!-- TAB CONTENT: REKAM LANGSUNG -->
+        <div id="tab-content-record" style="padding:1.5rem;">
+          <div class="recorder-area" id="recorder-area">
+            <!-- Idle -->
+            <div id="idle-state">
+              <button class="rec-btn idle" onclick="startRecording()">🎙️</button>
+              <p style="font-weight:600;color:var(--gray-700);">Tekan untuk mulai merekam</p>
+              <p class="text-muted text-sm">Pastikan mikrofon sudah diizinkan di browser</p>
+            </div>
+            <!-- Recording -->
+            <div id="recording-state" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
+              <button class="rec-btn rec" onclick="stopRecording()">⏹️</button>
+              <div class="rec-timer" id="rec-timer">00:00</div>
+              <div class="waveform-bar">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <p style="color:var(--red-500);font-weight:600;font-size:0.875rem;">● Sedang Merekam — tekan ⏹️ untuk berhenti</p>
+            </div>
+          </div>
+
+          <!-- Preview audio hasil rekam -->
+          <div id="audio-preview-record" style="margin-top:1.25rem;display:none;">
+            <div class="audio-preview">
+              <span>🎵</span>
+              <audio id="audio-player-record" controls style="flex:1;"></audio>
+            </div>
+            <div class="alert alert-success mt-1" style="font-size:0.82rem;">
+              ✅ Rekaman siap! Dengarkan dulu, lalu klik upload jika sudah oke.
+            </div>
+            <div style="display:flex;gap:0.75rem;margin-top:0.875rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="resetTab('record')">🔄 Rekam Ulang</button>
+              <button class="btn btn-primary" onclick="uploadToAI('record')">
+                🚀 Upload & Proses AI
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: UPLOAD FILE -->
+        <div id="tab-content-upload" style="padding:1.5rem;display:none;">
+          <div style="background:var(--gray-50);border:2px dashed var(--gray-300);border-radius:var(--radius-xl);padding:2rem;text-align:center;transition:var(--transition);"
+            id="drop-zone"
+            ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+            <div style="font-size:2.5rem;margin-bottom:0.875rem;">📂</div>
+            <p style="font-weight:600;color:var(--gray-700);margin-bottom:0.4rem;">Pilih atau seret file audio ke sini</p>
+            <p class="text-muted text-sm" style="margin-bottom:1.25rem;">Format: mp3, m4a, wav, ogg, webm, aac • Maks 25MB</p>
+            <label for="file-input" class="btn btn-outline" style="cursor:pointer;">
+              📁 Pilih File dari Penyimpanan
+            </label>
+            <input type="file" id="file-input" accept="audio/*,.m4a,.mp3,.wav,.ogg,.webm,.aac"
+              style="display:none;" onchange="onFileSelected()" />
+          </div>
+
+          <!-- Preview file yang dipilih -->
+          <div id="audio-preview-upload" style="margin-top:1.25rem;display:none;">
+            <div class="audio-preview">
+              <span>🎵</span>
+              <div style="flex:1;">
+                <p style="font-weight:600;font-size:0.875rem;color:var(--gray-700);" id="file-name-display"></p>
+                <p class="text-sm text-muted" id="file-size-display"></p>
+              </div>
+            </div>
+            <audio id="audio-player-upload" controls style="width:100%;margin-top:0.75rem;"></audio>
+            <div style="display:flex;gap:0.75rem;margin-top:0.875rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="resetTab('upload')">🗑️ Ganti File</button>
+              <button class="btn btn-primary" onclick="uploadToAI('upload')">
+                🚀 Upload & Proses AI
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── PHASE 2: AI PROCESSING ─────────────────────────── -->
+      <div id="phase-ai" class="card d-none">
+        <div class="ai-processing">
+          <div class="spinner dark"></div>
+          <h3>AI Sedang Memproses...</h3>
+          <p>Harap tunggu, proses ini membutuhkan 15–60 detik tergantung panjang rekaman.</p>
+          <div class="ai-steps">
+            <div class="ai-step" id="ai-step-1">
+              <span>⏳</span> Mengirim audio ke server...
+            </div>
+            <div class="ai-step" id="ai-step-2">
+              <span>⏳</span> Whisper AI mengubah suara ke teks...
+            </div>
+            <div class="ai-step" id="ai-step-3">
+              <span>⏳</span> Llama 3 menganalisis data medis...
+            </div>
+            <div class="ai-step" id="ai-step-4">
+              <span>⏳</span> Menyiapkan form rekam medis...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PHASE 3: ERROR ─────────────────────────────────── -->
+      <div id="phase-error" class="d-none">
+        <div class="alert alert-error" id="error-msg"></div>
+        <button class="btn btn-secondary" onclick="resetAll()">← Coba Lagi</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import { transcribeAudio } from "../js/api.js";
+    import { guardPage, renderUserInfo } from "../js/auth.js";
+    import { showToast } from "../js/ui.js";
+
+    guardPage("dokter");
+    renderUserInfo("user-name");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const rmFromUrl = urlParams.get("rm");
+    if (rmFromUrl) document.getElementById("no-rm-input").value = rmFromUrl;
+
+    let mediaRecorder = null;
+    let audioChunks   = [];
+    let recordedBlob  = null;
+    let uploadedBlob  = null;
+    let timerInterval = null;
+    let seconds       = 0;
+    let activeTab     = "record";
+
+    // ─── Tab Switcher ──────────────────────────────────────────
+    window.switchTab = function(tab) {
+      activeTab = tab;
+      const isRecord = tab === "record";
+      document.getElementById("tab-content-record").style.display = isRecord ? "block" : "none";
+      document.getElementById("tab-content-upload").style.display = isRecord ? "none" : "block";
+
+      const btnR = document.getElementById("tab-record");
+      const btnU = document.getElementById("tab-upload");
+      btnR.style.background    = isRecord ? "var(--blue-50)"    : "transparent";
+      btnR.style.color         = isRecord ? "var(--blue-700)"   : "var(--gray-500)";
+      btnR.style.borderBottom  = isRecord ? "2px solid var(--blue-600)" : "2px solid transparent";
+      btnU.style.background    = !isRecord ? "var(--blue-50)"   : "transparent";
+      btnU.style.color         = !isRecord ? "var(--blue-700)"  : "var(--gray-500)";
+      btnU.style.borderBottom  = !isRecord ? "2px solid var(--blue-600)" : "2px solid transparent";
+    };
+
+    // ─── Format Timer ──────────────────────────────────────────
+    function formatTime(s) {
+      return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+    }
+
+    // ─── Start Recording ───────────────────────────────────────
+    window.startRecording = async function() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+          recordedBlob = new Blob(audioChunks, { type: "audio/webm" });
+          const url = URL.createObjectURL(recordedBlob);
+          document.getElementById("audio-player-record").src = url;
+          // Sembunyikan seluruh area recorder — tidak perlu tampil lagi
+          document.getElementById("recorder-area").style.display = "none";
+          document.getElementById("recorder-area").classList.remove("recording");
+          document.getElementById("recording-state").style.display = "none";
+          document.getElementById("idle-state").style.display = "none";
+          // Tampilkan preview hasil rekaman
+          document.getElementById("audio-preview-record").style.display = "block";
+          clearInterval(timerInterval);
+          stream.getTracks().forEach(t => t.stop());
+        };
+
+        mediaRecorder.start();
+        seconds = 0;
+        document.getElementById("rec-timer").textContent = "00:00";
+        timerInterval = setInterval(() => {
+          seconds++;
+          document.getElementById("rec-timer").textContent = formatTime(seconds);
+        }, 1000);
+
+        document.getElementById("recorder-area").classList.add("recording");
+        document.getElementById("idle-state").style.display = "none";
+        document.getElementById("recording-state").style.display = "flex";
+        document.getElementById("audio-preview-record").style.display = "none";
+      } catch(err) {
+        showToast("Gagal akses mikrofon: " + err.message, "error");
+      }
+    };
+
+    window.stopRecording = function() {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+        clearInterval(timerInterval);
+      }
+    };
+
+    // ─── File dari penyimpanan ─────────────────────────────────
+    window.onFileSelected = function() {
+      const file = document.getElementById("file-input").files[0];
+      if (!file) return;
+
+      const maxSize = 25 * 1024 * 1024;
+      if (file.size > maxSize) {
+        showToast("File terlalu besar! Maksimal 25MB.", "error");
+        return;
+      }
+
+      uploadedBlob = file;
+      const url = URL.createObjectURL(file);
+      document.getElementById("audio-player-upload").src = url;
+      document.getElementById("file-name-display").textContent = file.name;
+      document.getElementById("file-size-display").textContent =
+        `Ukuran: ${(file.size / (1024*1024)).toFixed(2)} MB`;
+      document.getElementById("audio-preview-upload").style.display = "block";
+      document.getElementById("drop-zone").style.display = "none";
+      showToast("File dipilih: " + file.name, "info");
+    };
+
+    // ─── Drag & Drop ───────────────────────────────────────────
+    window.onDragOver = function(e) {
+      e.preventDefault();
+      document.getElementById("drop-zone").style.borderColor = "var(--blue-500)";
+      document.getElementById("drop-zone").style.background = "var(--blue-50)";
+    };
+    window.onDragLeave = function() {
+      document.getElementById("drop-zone").style.borderColor = "var(--gray-300)";
+      document.getElementById("drop-zone").style.background = "var(--gray-50)";
+    };
+    window.onDrop = function(e) {
+      e.preventDefault();
+      window.onDragLeave();
+      const file = e.dataTransfer.files[0];
+      if (!file || !file.type.startsWith("audio/")) {
+        showToast("File harus berupa audio!", "error");
+        return;
+      }
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      document.getElementById("file-input").files = dt.files;
+      window.onFileSelected();
+    };
+
+    // ─── Reset Tab ─────────────────────────────────────────────
+    window.resetTab = function(tab) {
+      if (tab === "record") {
+        recordedBlob = null;
+        document.getElementById("audio-preview-record").style.display = "none";
+        document.getElementById("audio-player-record").src = "";
+        // Kembalikan area recorder ke kondisi awal (idle)
+        document.getElementById("recorder-area").style.display = "flex";
+        document.getElementById("idle-state").style.display = "flex";
+        document.getElementById("recording-state").style.display = "none";
+      } else {
+        uploadedBlob = null;
+        document.getElementById("audio-preview-upload").style.display = "none";
+        document.getElementById("audio-player-upload").src = "";
+        document.getElementById("drop-zone").style.display = "block";
+        document.getElementById("file-input").value = "";
+      }
+    };
+
+    // ─── Upload & Proses AI ────────────────────────────────────
+    window.uploadToAI = async function(tab) {
+      const blob = tab === "record" ? recordedBlob : uploadedBlob;
+      if (!blob) {
+        showToast("Belum ada " + (tab === "record" ? "rekaman" : "file") + ".", "error");
+        return;
+      }
+
+      document.getElementById("phase-record").classList.add("d-none");
+      document.getElementById("phase-ai").classList.remove("d-none");
+
+      const steps = ["ai-step-1","ai-step-2","ai-step-3","ai-step-4"];
+      let stepIdx = 0;
+      const stepInterval = setInterval(() => {
+        if (stepIdx > 0) {
+          document.getElementById(steps[stepIdx-1]).classList.remove("active");
+          document.getElementById(steps[stepIdx-1]).classList.add("done");
+          document.getElementById(steps[stepIdx-1]).querySelector("span").textContent = "✅";
+        }
+        if (stepIdx < steps.length) {
+          document.getElementById(steps[stepIdx]).classList.add("active");
+          stepIdx++;
+        } else {
+          clearInterval(stepInterval);
+        }
+      }, 4000);
+
+      try {
+        const filename = blob.name || `rekaman_${Date.now()}.webm`;
+        const result = await transcribeAudio(blob, filename);
+        clearInterval(stepInterval);
+
+        sessionStorage.setItem("ai_result", JSON.stringify(result));
+        sessionStorage.setItem("no_rm_prefill", document.getElementById("no-rm-input").value.trim());
+        window.location.href = "anamnesis.html?mode=edit";
+
+      } catch(err) {
+        clearInterval(stepInterval);
+        document.getElementById("phase-ai").classList.add("d-none");
+        document.getElementById("phase-error").classList.remove("d-none");
+        document.getElementById("error-msg").innerHTML = `
+          ❌ <strong>Gagal proses AI:</strong> ${err.message}<br><br>
+          <small>Coba cek: koneksi internet, server FastAPI menyala, dan file audio tidak rusak.</small>`;
+        showToast("Gagal proses AI", "error");
+      }
+    };
+
+    window.resetAll = function() {
+      document.getElementById("phase-record").classList.remove("d-none");
+      document.getElementById("phase-ai").classList.add("d-none");
+      document.getElementById("phase-error").classList.add("d-none");
+    };
+  </script>
+</body>
+</html>
