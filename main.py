@@ -18,18 +18,19 @@ models.Base.metadata.create_all(bind=engine)
 # ─────────────────────────────────────────────
 # Inisialisasi aplikasi FastAPI
 # ─────────────────────────────────────────────
-
 app = FastAPI(
     title="SmartERM RSIA Al Hasanah",
     description="Sistem Rekam Medis Elektronik berbasis AI (Whisper + Llama 3)",
     version="2.0.0",
 )
+
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
 app.mount("/css", StaticFiles(directory=FRONTEND_DIR / "css"), name="css")
 app.mount("/js", StaticFiles(directory=FRONTEND_DIR / "js"), name="js")
 app.mount("/pages", StaticFiles(directory=FRONTEND_DIR / "pages"), name="pages")
+app.mount("/animations", StaticFiles(directory="frontend/animations"), name="animations")
 
 @app.get("/")
 def serve_index():
@@ -118,7 +119,7 @@ def register_admin(data: RegisterAdminSchema, db: Session = Depends(get_db)):
 # Health check
 # ─────────────────────────────────────────────
 
-@app.get("/", tags=["Info"])
+@app.get("/health", tags=["Info"])
 def health_check():
     """Cek apakah server sedang berjalan dengan normal."""
     return {
