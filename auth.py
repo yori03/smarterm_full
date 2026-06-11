@@ -11,7 +11,7 @@ from jose import jwt
 from passlib.context import CryptContext
 
 from config import ALGORITHM, SECRET_KEY
-
+from datetime import datetime, timedelta
 # Mesin enkripsi password — bcrypt adalah algoritma paling aman untuk password
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -26,12 +26,13 @@ def verify_password(password_biasa: str, password_hash: str) -> bool:
     return pwd_context.verify(password_biasa, password_hash)
 
 
-def create_access_token(data: dict) -> str:
-    """
-    Buat JWT token dari data payload (berisi username + role).
-    Token ini dikirim ke client dan dipakai sebagai bukti login di setiap request.
+def create_access_token(data: dict):
+    payload = data.copy()
 
-    Catatan: token tidak memiliki masa berlaku (tidak expired).
-    Tambahkan key 'exp' ke payload jika ingin membatasi masa aktif token.
-    """
-    return jwt.encode(data.copy(), SECRET_KEY, algorithm=ALGORITHM)
+    payload["exp"] = datetime.utcnow() + timedelta(hours=8)
+
+    return jwt.encode(
+        payload,
+        SECRET_KEY,
+        algorithm=ALGORITHM
+    )

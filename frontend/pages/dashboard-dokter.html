@@ -382,8 +382,22 @@
         <div class="form-group"><label class="form-label">Jenis Kelamin <span class="required">*</span></label><select id="p-jk" class="form-control"><option value="">-- Pilih --</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">NIK</label><input type="text" id="p-nik" class="form-control" placeholder="16 digit NIK (opsional)" maxlength="16"/></div>
-        <div class="form-group"><label class="form-label">No. Telepon</label><input type="text" id="p-telp" class="form-control" placeholder="08xxxxxxxxxx"/></div>
+       <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">NIK</label>
+        <input type="text" id="p-nik" class="form-control"
+              placeholder="16 digit NIK"
+              maxlength="16"
+              inputmode="numeric"/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">No. Telepon</label>
+        <input type="text" id="p-telp" class="form-control"
+              placeholder="08xxxxxxxxxx"
+              maxlength="13"
+              inputmode="numeric"/>
+      </div>
       </div>
       <div class="form-group"><label class="form-label">Alamat</label><textarea id="p-alamat" class="form-control" placeholder="Alamat lengkap (opsional)" rows="2"></textarea></div>
       <div style="display:flex;gap:.75rem;justify-content:center;">
@@ -501,6 +515,14 @@
     } catch(e) { showToast('Gagal memuat data: '+e.message, 'error'); }
   }
   window.cetakSemua = cetakSemua;
+  document.getElementById('p-nik').addEventListener('input', function () {
+  this.value = this.value.replace(/\D/g, '').slice(0, 16);
+});
+
+// Telepon hanya angka maksimal 13 digit
+document.getElementById('p-telp').addEventListener('input', function () {
+  this.value = this.value.replace(/\D/g, '').slice(0, 13);
+});
 </script>
 
 <script type="module">

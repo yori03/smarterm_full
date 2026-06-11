@@ -229,7 +229,7 @@
       // Tgl. Lahir & Alamat diambil dari root response (bukan dari data_medis)
       const tglLahir  = data.tanggal_lahir  ? fmtDate(data.tanggal_lahir) : "-";
       const alamat    = data.alamat         || "-";
-      const tglDt     = fmtDateTime(data.waktu_pemeriksaan);  // untuk Waktu Pemeriksaan & TTD
+      const tglDt     = fmtDate(data.waktu_pemeriksaan);  // untuk Waktu Pemeriksaan & TTD
 
       return `
       <!-- ═══ KOP SURAT ═══ -->
@@ -340,16 +340,6 @@
       try {
         return new Date(d).toLocaleDateString("id-ID", {
           day: "numeric", month: "long", year: "numeric"
-        });
-      } catch { return d; }
-    }
-
-    function fmtDateTime(d) {
-      if (!d) return "-";
-      try {
-        return new Date(d).toLocaleString("id-ID", {
-          day: "numeric", month: "short", year: "numeric",
-          hour: "2-digit", minute: "2-digit"
         });
       } catch { return d; }
     }

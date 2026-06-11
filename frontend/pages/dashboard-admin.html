@@ -179,6 +179,7 @@
     .alert-error   { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
     .alert-success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
     .alert-info    { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .alert-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
     .d-none { display: none !important; }
 
     code { font-family: 'Courier New', monospace; background: var(--purple-bg); border-radius: 5px; padding: 0.1rem 0.4rem; font-size: 0.78rem; color: var(--purple-dark); }
@@ -216,9 +217,17 @@
     .tip-steps { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; line-height: 1.7; }
     .tip-steps .link { color: var(--purple); font-weight: 700; }
 
+    /* CETAK RM — search card */
+    .cetak-search-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 1.5rem 1.75rem; box-shadow: 0 2px 8px rgba(0,0,0,.04); margin-bottom: 1.5rem; }
+    .cetak-search-row { display: flex; gap: 0.75rem; align-items: flex-end; }
+    .cetak-search-row .form-group { flex: 1; margin: 0; }
+    .cetak-divider { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; }
+    .cetak-divider::before, .cetak-divider::after { content:''; flex:1; border-top: 1px solid var(--border); }
+
     @media (max-width: 900px) {
       .sidebar { display: none; } .main-content { margin-left: 0; } .nav-brand { display: none; }
       .stat-grid { grid-template-columns: 1fr 1fr; } .form-row { grid-template-columns: 1fr; }
+      .cetak-search-row { flex-direction: column; }
     }
   </style>
 </head>
@@ -272,6 +281,9 @@
     <button class="sb-link" data-section="pending">
       <div class="licon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>Pending
       <span id="pending-badge" class="sb-badge" style="display:none">0</span>
+    </button>
+    <button class="sb-link" data-section="cetak-rm">
+      <div class="licon"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>Cetak Rekam Medis
     </button>
   </nav>
   <div class="sb-bottom">
@@ -329,7 +341,8 @@
         <div class="tip-steps">
           Klik <span class="link">"Tambah Dokter"</span> untuk membuat akun dokter →
           kelola <span class="link">"Daftar Admin"</span> untuk atur akun administrator →
-          pantau <span class="link">"Pending"</span> untuk aktivasi pendaftar baru.
+          pantau <span class="link">"Pending"</span> untuk aktivasi pendaftar baru →
+          gunakan <span class="link">"Cetak Rekam Medis"</span> untuk mencetak rekam pasien.
         </div>
       </div>
     </div>
@@ -443,6 +456,45 @@
     </div>
   </section>
 
+  <!-- CETAK REKAM MEDIS -->
+  <section id="sec-cetak-rm" class="sec">
+    <div class="page-header">
+      <h2>Cetak Rekam Medis 🖨️</h2>
+      <p>Cari pasien berdasarkan nama atau nomor rekam medis, lalu cetak riwayat rekam medisnya.</p>
+    </div>
+
+    <!-- Search Card -->
+    <div class="cetak-search-card">
+      <div class="cetak-search-row">
+        <div class="form-group">
+          <label class="form-label">Cari berdasarkan Nama Pasien</label>
+          <input type="text" id="cetak-search-nama" class="form-control" placeholder="Ketik nama pasien..." />
+        </div>
+        <button class="btn btn-primary" id="btn-cetak-cari-nama">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Cari
+        </button>
+      </div>
+      <div class="cetak-divider">atau</div>
+      <div class="cetak-search-row">
+        <div class="form-group">
+          <label class="form-label">Cari berdasarkan No. Rekam Medis</label>
+          <input type="text" id="cetak-search-rm" class="form-control" placeholder="Contoh: RM2024001" />
+        </div>
+        <button class="btn btn-outline" id="btn-cetak-cari-rm">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Cari
+        </button>
+      </div>
+    </div>
+
+    <!-- Hasil Pencarian Nama -->
+    <div id="cetak-hasil-cari"></div>
+
+    <!-- Detail Pasien + Riwayat -->
+    <div id="cetak-detail-pasien"></div>
+  </section>
+
 </main>
 
 <!-- MODAL EDIT DOKTER -->
@@ -529,16 +581,12 @@
 
 <div id="toast-container"></div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SATU BLOK SCRIPT MODULE — semua logika di sini
-     Tidak ada script non-module yang memanggil fungsi dari module,
-     sehingga tidak ada ReferenceError.
-════════════════════════════════════════════════════════════ -->
 <script type="module">
   import {
     listDokter, createDokter, editDokter, hapusDokter,
     listAdmin,  createAdmin,  editAdmin,  hapusAdmin,
-    pendingAktivasi, aktivasiUser
+    pendingAktivasi, aktivasiUser,
+    cariPasien, getPasien
   } from "../js/api.js";
   import { guardPage, renderUserInfo, clearSession } from "../js/auth.js";
 
@@ -569,6 +617,22 @@
     catch { return d; }
   }
 
+  function formatDate(d) {
+    if (!d) return '-';
+    try { return new Date(d).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' }); }
+    catch { return d; }
+  }
+
+  function hitungUmur(tglLahir) {
+    if (!tglLahir) return '';
+    const lahir = new Date(tglLahir);
+    const sekarang = new Date();
+    let umur = sekarang.getFullYear() - lahir.getFullYear();
+    const bulan = sekarang.getMonth() - lahir.getMonth();
+    if (bulan < 0 || (bulan === 0 && sekarang.getDate() < lahir.getDate())) umur--;
+    return `${umur} tahun`;
+  }
+
   function escStr(s) {
     return String(s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');
   }
@@ -594,6 +658,7 @@
     'list-admin':    loadAdmin,
     'pending':       loadPending,
     'tambah-dokter': null,
+    'cetak-rm':      initCetakRM,
   };
 
   function showSection(name) {
@@ -608,7 +673,7 @@
     if (SECTION_LOAD[name]) SECTION_LOAD[name]();
   }
 
-  // Event delegation untuk navigasi (sidebar links, stat cards, tombol goto)
+  // Event delegation untuk navigasi
   document.addEventListener('click', e => {
     const gotoEl = e.target.closest('[data-goto]');
     if (gotoEl) { showSection(gotoEl.dataset.goto); return; }
@@ -777,6 +842,166 @@
   }
 
   // ═══════════════════════════════════════════════════════════
+  // CETAK REKAM MEDIS
+  // ═══════════════════════════════════════════════════════════
+
+  function initCetakRM() {
+    // Bersihkan hasil sebelumnya saat section dibuka
+    document.getElementById('cetak-hasil-cari').innerHTML = '';
+    document.getElementById('cetak-detail-pasien').innerHTML = '';
+    document.getElementById('cetak-search-nama').value = '';
+    document.getElementById('cetak-search-rm').value = '';
+  }
+
+  async function cetakCariNama() {
+    const nama = document.getElementById('cetak-search-nama').value.trim();
+    if (!nama) { showToast('Masukkan nama pasien dulu.', 'error'); return; }
+
+    const container = document.getElementById('cetak-hasil-cari');
+    document.getElementById('cetak-detail-pasien').innerHTML = '';
+    container.innerHTML = `<div class="data-card"><div class="tbl-empty"><span class="spinner dark"></span> Mencari...</div></div>`;
+
+    try {
+      const data = await cariPasien(nama);
+      if (!data.data || !data.data.length) {
+        container.innerHTML = `<div class="alert alert-warning">Tidak ada pasien dengan nama "<strong>${nama}</strong>".</div>`;
+        return;
+      }
+      const rows = data.data.map(p => `
+        <tr>
+          <td><code>${p.no_rekam_medis}</code></td>
+          <td><strong>${p.nama_pasien}</strong></td>
+          <td>${formatDate(p.tanggal_lahir)}</td>
+          <td>${p.no_telepon || '-'}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" data-cetak-lihat-rm="${escStr(p.no_rekam_medis)}">
+              Lihat &amp; Cetak
+            </button>
+          </td>
+        </tr>`).join('');
+      container.innerHTML = `
+        <div class="data-card">
+          <div class="data-card-header"><h3>Hasil Pencarian (${data.total})</h3></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>No. RM</th><th>Nama</th><th>Tgl Lahir</th><th>Telepon</th><th>Aksi</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
+    } catch(err) {
+      container.innerHTML = `<div class="alert alert-error">❌ ${err.message}</div>`;
+    }
+  }
+
+  async function cetakCariRM() {
+    const rm = document.getElementById('cetak-search-rm').value.trim();
+    if (!rm) { showToast('Masukkan No. Rekam Medis dulu.', 'error'); return; }
+    document.getElementById('cetak-hasil-cari').innerHTML = '';
+    await cetakLihatDetailPasien(rm);
+  }
+
+  async function cetakLihatDetailPasien(no_rm) {
+    const dc = document.getElementById('cetak-detail-pasien');
+    dc.innerHTML = `<div class="data-card"><div class="tbl-empty"><span class="spinner dark"></span> Memuat data pasien...</div></div>`;
+    dc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    try {
+      const data = await getPasien(no_rm);
+      const p    = data.data_pasien;
+
+      const riwayatRows = data.riwayat_berobat.length === 0
+        ? `<tr><td colspan="4" class="tbl-empty">Belum ada rekam medis.</td></tr>`
+        : data.riwayat_berobat.map(r => `
+          <tr>
+            <td>${formatDateTime(r.waktu_pemeriksaan)}</td>
+            <td>${r.diagnosa_utama || '-'}</td>
+            <td><span class="badge ${r.status_record === 'final' ? 'badge-green' : 'badge-amber'}">${r.status_record}</span></td>
+            <td>
+  <a href="cetak-rm.html?id=${r.id_record}"
+     class="btn btn-outline btn-sm"
+     target="_blank">
+     Lihat
+  </a>
+</td>
+          </tr>`).join('');
+
+      dc.innerHTML = `
+        <div class="data-card">
+          <div class="data-card-header">
+            <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+              <h3>👤 ${p.nama_pasien}</h3>
+              <span class="badge badge-blue">No. RM: ${p.no_rekam_medis}</span>
+            </div>
+            <div class="data-card-header-actions">
+              <button class="btn btn-primary btn-sm" id="btn-cetak-semua-rm" data-rm="${escStr(p.no_rekam_medis)}">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                 Cetak Semua (Final)
+              </button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:1rem 1.2rem;border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-size:0.71rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Tgl Lahir</div>
+              <div style="font-size:0.84rem;font-weight:700;color:var(--text);">${formatDate(p.tanggal_lahir)}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">${hitungUmur(p.tanggal_lahir)}</div>
+            </div>
+            <div>
+              <div style="font-size:0.71rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Jenis Kelamin</div>
+              <div style="font-size:0.84rem;font-weight:700;color:var(--text);">${p.jenis_kelamin === 'L' ? '♂ Laki-laki' : '♀ Perempuan'}</div>
+            </div>
+            <div>
+              <div style="font-size:0.71rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">NIK</div>
+              <div style="font-size:0.84rem;font-weight:700;color:var(--text);">${p.nik || '-'}</div>
+            </div>
+            <div>
+              <div style="font-size:0.71rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Telepon</div>
+              <div style="font-size:0.84rem;font-weight:700;color:var(--text);">${p.no_telepon || '-'}</div>
+            </div>
+          </div>
+          <div class="data-card-header" style="border-top:none;">
+            <h3>🗂️ Riwayat Kunjungan (${data.total_kunjungan}x)</h3>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Waktu Pemeriksaan</th><th>Diagnosa Utama</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody>${riwayatRows}</tbody>
+            </table>
+          </div>
+        </div>`;
+    } catch(err) {
+      dc.innerHTML = `<div class="alert alert-error">❌ ${err.message}</div>`;
+    }
+  }
+
+  async function cetakSemuaRM(no_rm) {
+    showToast('Menyiapkan dokumen cetak...', 'info');
+    try {
+      const data = await getPasien(no_rm);
+      const ids  = data.riwayat_berobat.filter(r => r.status_record === 'final').map(r => r.id_record);
+      if (!ids.length) {
+        showToast('Belum ada rekam medis final untuk dicetak.', 'error');
+        return;
+      }
+      window.open('cetak-semua.html?ids=' + ids.join(','), '_blank');
+    } catch(err) {
+      showToast('Gagal memuat data: ' + err.message, 'error');
+    }
+  }
+
+  // Tombol Cari di section Cetak RM
+  document.getElementById('btn-cetak-cari-nama').addEventListener('click', cetakCariNama);
+  document.getElementById('btn-cetak-cari-rm').addEventListener('click', cetakCariRM);
+
+  // Enter key di input pencarian cetak
+  document.getElementById('cetak-search-nama').addEventListener('keydown', e => {
+    if (e.key === 'Enter') cetakCariNama();
+  });
+  document.getElementById('cetak-search-rm').addEventListener('keydown', e => {
+    if (e.key === 'Enter') cetakCariRM();
+  });
+
+  // ═══════════════════════════════════════════════════════════
   // EVENT DELEGATION — tombol di dalam tabel (render dinamis)
   // ═══════════════════════════════════════════════════════════
   document.addEventListener('click', async e => {
@@ -814,9 +1039,8 @@
     // ── Hapus dokter ─────────────────────────────────────────
     const hapusDokterBtn = e.target.closest('[data-hapus-dokter-id]');
     if (hapusDokterBtn) {
-      const id   = hapusDokterBtn.dataset.hapusDocterId || hapusDokterBtn.dataset.hapusDocterId;
       const idVal = hapusDokterBtn.getAttribute('data-hapus-dokter-id');
-      const nama = hapusDokterBtn.getAttribute('data-hapus-dokter-nama');
+      const nama  = hapusDokterBtn.getAttribute('data-hapus-dokter-nama');
       if (!confirm(`Hapus akun dokter "${nama}"?\n\nJika punya rekam medis, akun akan dinonaktifkan saja.`)) return;
       try {
         const res = await hapusDokter(idVal);
@@ -851,6 +1075,22 @@
         showToast(res.msg, 'success');
         loadAdmin(); loadDashboard();
       } catch(err) { showToast('Gagal: ' + err.message, 'error'); }
+      return;
+    }
+
+    // ── Cetak RM — Lihat detail dari hasil cari nama ─────────
+    const cetakLihatBtn = e.target.closest('[data-cetak-lihat-rm]');
+    if (cetakLihatBtn) {
+      const rm = cetakLihatBtn.getAttribute('data-cetak-lihat-rm');
+      await cetakLihatDetailPasien(rm);
+      return;
+    }
+
+    // ── Cetak RM — Cetak semua rekam medis final ─────────────
+    const cetakSemuaBtn = e.target.closest('[data-rm]#btn-cetak-semua-rm');
+    if (cetakSemuaBtn) {
+      const rm = cetakSemuaBtn.getAttribute('data-rm');
+      await cetakSemuaRM(rm);
       return;
     }
   });

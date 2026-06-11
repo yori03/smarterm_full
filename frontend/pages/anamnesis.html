@@ -6,6 +6,61 @@
   <title>Form Rekam Medis — SmartERM</title>
   <link rel="stylesheet" href="../css/style.css" />
   <style>
+    /* ─── OVERRIDE NAVBAR (LEBIH SLIM & ELEGAN) ─── */
+    .navbar {
+      height: 60px; /* Lebih langsing (slim) */
+      padding: 0 2rem;
+      background: #ffffff;
+      border-bottom: 1px solid var(--gray-200, #e5e7eb);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar-brand {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text, #111827);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #0d9488, #0f766e); /* Warna Teal elegan */
+      color: white;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
+    }
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .user-badge {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-soft, #374151);
+      background: var(--gray-50, #f9fafb);
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid var(--gray-200, #e5e7eb);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    /* ───────────────────────────────────────────── */
+
     .form-page { max-width: 820px; margin: 0 auto; }
     .transkrip-box {
       background: var(--blue-50);
@@ -99,13 +154,10 @@
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">
-      <div class="logo-icon">🏥</div>
-      SmartERM
+    <div class="navbar-brand">SmartERM
     </div>
     <div class="navbar-right">
-      <div class="user-badge">👨‍⚕️ dr. <span id="user-name"></span></div>
-      <a href="dashboard-dokter.html" class="btn btn-secondary btn-sm">← Dashboard</a>
+      <div class="user-badge">dr. <span id="user-name"></span></div> <a href="dashboard-dokter.html" class="btn btn-secondary btn-sm">← Dashboard</a>
     </div>
   </nav>
 
@@ -119,22 +171,16 @@
         <p id="page-subtitle">Isi atau koreksi data rekam medis pasien.</p>
       </div>
 
-      <!-- Alert & Success -->
       <div id="alert-form" class="d-none"></div>
       <div id="success-form" class="d-none"></div>
 
-      <!-- Transkrip AI -->
       <div id="transkrip-section" class="transkrip-box d-none">
         <h4>🎙️ Transkrip Suara (dari Whisper AI)</h4>
         <p id="transkrip-text"></p>
       </div>
 
-      <!-- ═══════════════════════════════════════════
-           FORM REKAM MEDIS
-      ════════════════════════════════════════════ -->
       <form id="anamnesis-form" onsubmit="return false;">
 
-        <!-- ─── Identitas Pasien ──────────────────────────── -->
         <div class="anamnesis-section">
           <div class="anamnesis-section-header">
             <span class="icon">🗂️</span>
@@ -149,7 +195,6 @@
               <p class="form-hint">Wajib diisi. Pastikan No. RM pasien sudah terdaftar di sistem.</p>
             </div>
 
-            <!-- Panel info otomatis — muncul setelah No. RM valid ditemukan -->
             <div id="info-pasien-box" class="pasien-info-panel d-none">
               <div class="form-row-3">
                 <div class="form-group" style="margin-bottom:0;">
@@ -170,13 +215,11 @@
               </p>
             </div>
 
-            <!-- Pesan error jika No. RM tidak ditemukan -->
             <p id="info-pasien-error" class="pasien-info-error d-none"></p>
 
           </div>
         </div>
 
-        <!-- ─── Data Vital ─────────────────────────────────── -->
         <div class="anamnesis-section">
           <div class="anamnesis-section-header">
             <span class="icon">💓</span>
@@ -200,7 +243,6 @@
           </div>
         </div>
 
-        <!-- ─── Data Subjektif ─────────────────────────────── -->
         <div class="anamnesis-section">
           <div class="anamnesis-section-header">
             <span class="icon">🗣️</span>
@@ -225,7 +267,6 @@
           </div>
         </div>
 
-        <!-- ─── Data Kebidanan ─────────────────────────────── -->
         <div class="anamnesis-section">
           <div class="anamnesis-section-header">
             <span class="icon">🤰</span>
@@ -247,7 +288,6 @@
           </div>
         </div>
 
-        <!-- ─── Pemeriksaan Fisik ──────────────────────────── -->
         <div class="anamnesis-section">
           <div class="anamnesis-section-header">
             <span class="icon">🔬</span>
@@ -262,7 +302,6 @@
           </div>
         </div>
 
-        <!-- ─── Assessment & Plan ─────────────────────────── -->
         <div class="anamnesis-section">
           <div class="anamnesis-section-header">
             <span class="icon">📋</span>
@@ -292,7 +331,6 @@
           </div>
         </div>
 
-        <!-- ─── Sticky Actions ────────────────────────────── -->
         <div class="sticky-actions" id="form-actions">
           <button class="btn btn-primary" id="btn-submit" onclick="submitForm()">
             💾 Simpan Rekam Medis
@@ -314,12 +352,22 @@
     import { guardPage, renderUserInfo } from "../js/auth.js";
     import { showToast, formatDateTime } from "../js/ui.js";
 
-    guardPage("dokter");
-    renderUserInfo("user-name");
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode      = urlParams.get("mode") || "edit";
+    const idRecord  = urlParams.get("id");
 
-    const urlParams  = new URLSearchParams(window.location.search);
-    const mode       = urlParams.get("mode") || "edit"; // edit | view
-    const idRecord   = urlParams.get("id");
+    console.log("MODE =", mode);
+    console.log("ID =", idRecord);
+    console.log("ROLE =", localStorage.getItem("role"));
+
+    // Admin boleh melihat rekam medis
+    if (mode === "view") {
+      guardPage();
+    } else {
+      guardPage("dokter");
+    }
+
+    renderUserInfo("user-name");
     let savedIdRecord = null;
 
     // ─── Helper: format tanggal lahir → "1 Januari 1990" ───────
@@ -379,8 +427,9 @@
 
     // ─── Mode: VIEW ─────────────────────────────────────────────
     if (mode === "view" && idRecord) {
-      loadRekamMedis(idRecord);
-    }
+  alert("MASUK MODE VIEW");
+  loadRekamMedis(idRecord);
+}
     // ─── Mode: EDIT (dari hasil AI di sessionStorage) ────────────
     else if (mode === "edit") {
       const aiRaw       = sessionStorage.getItem("ai_result");
