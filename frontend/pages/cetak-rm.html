@@ -74,7 +74,6 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 7.5px; text-align: center; line-height: 1.3; font-weight: bold;
     }
-
     .kop-center { text-align: center; line-height: 1.3; }
     .kop-center .rs-top    { font-size: 11.5px; }
     .kop-center .rs-bold   { font-size: 15.5px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -96,78 +95,57 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin-bottom: 6px;   /* was 14px */
+      margin-bottom: 6px;
     }
 
     /* ─── Seksi ──────────────────────────── */
-    .section { margin-bottom: 7px; }  /* was 13px */
+    .section { margin-bottom: 7px; }
     .section-title {
       font-size: 11.5px;
       font-weight: 700;
       text-transform: uppercase;
-      margin-bottom: 3px;   /* was 5px */
+      margin-bottom: 3px;
     }
 
-    /*
-    ╔══════════════════════════════════════════════════════╗
-    ║  TABEL — 2 kolom saja (label | nilai)               ║
-    ║  • table-layout: fixed  → lebar konsisten           ║
-    ║  • Kolom label = 200px untuk SEMUA tabel            ║
-    ║  • Tidak ada kolom colon terpisah                   ║
-    ║  • Nilai diawali ": " langsung di dalam sel         ║
-    ╚══════════════════════════════════════════════════════╝
-    */
+    /* ─── Tabel data ─────────────────────── */
     .data-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 11.5px;
       table-layout: fixed;
     }
-
     .data-table td {
       border: 1px solid #000;
-      padding: 3px 8px;     /* was 5px 10px */
+      padding: 3px 8px;
       vertical-align: middle;
     }
-
-    /* Kolom label — FIXED 200px, sama untuk semua tabel */
-    .data-table td.lbl {
-      width: 200px;
-    }
-
-    /* Kolom nilai */
-    .data-table td.val {
-      /* sisa lebar otomatis */
-    }
-
-
-    /* Row yang butuh tinggi lebih (multi-baris) */
+    .data-table td.lbl { width: 200px; }
     .data-table tr.tall td {
-      height: 30px;         /* was 38px */
+      height: 30px;
       vertical-align: top;
-      padding-top: 4px;     /* was 6px */
+      padding-top: 4px;
     }
 
     /* ─── Footer / TTD ───────────────────── */
     .surat-footer {
-      margin-top: 14px;     /* was 30px */
+      margin-top: 14px;
       display: flex;
       justify-content: flex-end;
     }
-    .ttd-area { text-align: center; min-width: 200px; }
-    .ttd-place { font-size: 11.5px; }
-    .ttd-role  { font-size: 11.5px; margin-bottom: 36px; } /* was 50px */
-    .ttd-line  { border-top: 1px solid #000; width: 170px; margin: 0 auto 3px; }
-    .ttd-name  { font-size: 11.5px; font-weight: 700; }
+    .ttd-area      { text-align: center; min-width: 200px; }
+    .ttd-place     { font-size: 11.5px; }
+    .ttd-role      { font-size: 11.5px; margin-bottom: 36px; }
+    .ttd-line      { border-top: 1px solid #000; width: 170px; margin: 0 auto 3px; }
+    .ttd-name      { font-size: 11.5px; font-weight: 700; }
 
     /* ─── Footer note ────────────────────── */
     .footer-note {
-      margin-top: 10px;     /* was 18px */
+      margin-top: 10px;
       text-align: center;
       font-size: 9.5px;
       color: #555;
       border-top: 1px solid #bbb;
-      padding-top: 5px;     /* was 7px */
+      padding-top: 5px;
     }
 
     /* ─── Loading ────────────────────────── */
@@ -182,7 +160,13 @@
     @media print {
       body { background: white; }
       .print-bar { display: none !important; }
-      .page { margin: 0; padding: 18px 26px 22px; box-shadow: none; width: 100%; min-height: auto; }
+      .page {
+        margin: 0;
+        padding: 18px 26px 22px;
+        box-shadow: none;
+        width: 100%;
+        min-height: auto;
+      }
     }
   </style>
 </head>
@@ -221,7 +205,7 @@
     async function loadAndRender(id) {
       try {
         const data = await getRekamMedis(id);
-        renderSurat(data);
+        document.getElementById("page").innerHTML = buildHTML(data);
         document.getElementById("doc-status").textContent =
           `Rekam Medis — ${data.pasien || "-"} • ${fmtDate(data.waktu_pemeriksaan)}`;
         document.getElementById("btn-print").disabled = false;
@@ -230,22 +214,22 @@
       }
     }
 
-    function renderSurat(data) {
-      const dm = data.data_medis || {};
-      document.getElementById("page").innerHTML = buildHTML(data, dm);
-    }
-
     /* ─── Helper: buat baris tabel 2 kolom ─── */
     function row(label, value, tall = false) {
       const cls = tall ? ' class="tall"' : '';
       return `<tr${cls}><td class="lbl">${label}</td><td class="val">${value || ''}</td></tr>`;
     }
 
-    function buildHTML(data, dm) {
-      const noRm   = data.no_rekam_medis || "-";
-      const pasien = data.pasien  || "-";
-      const dokter = data.dokter  || "-";
-      const tglDt  = fmtDateTime(data.waktu_pemeriksaan);
+    /* ─── Bangun HTML surat ─── */
+    function buildHTML(data) {
+      const dm        = data.data_medis || {};
+      const noRm      = data.no_rekam_medis || "-";
+      const pasien    = data.pasien         || "-";
+      const dokter    = data.dokter         || "-";
+      // Tgl. Lahir & Alamat diambil dari root response (bukan dari data_medis)
+      const tglLahir  = data.tanggal_lahir  ? fmtDate(data.tanggal_lahir) : "-";
+      const alamat    = data.alamat         || "-";
+      const tglDt     = fmtDateTime(data.waktu_pemeriksaan);  // untuk Waktu Pemeriksaan & TTD
 
       return `
       <!-- ═══ KOP SURAT ═══ -->
@@ -254,14 +238,12 @@
           <img src="logoalhasanah.png" alt="Logo RSIA"
             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'placeholder',textContent:'RSIA AL HASANAH'}))">
         </div>
-
         <div class="kop-center">
           <div class="rs-top">RUMAH SAKIT IBU DAN ANAK</div>
           <div class="rs-bold">AL-HASANAH</div>
           <div class="rs-addr">Jalan Sri Rejeki No.91 B Telp (0351) 463173, 7705075 Fax (0351) 467733</div>
           <div class="rs-city">KOTA MADIUN</div>
         </div>
-
         <div class="kop-logo">
           <img src="logo yayasan hijau.png" alt="Logo Yayasan"
             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'placeholder',textContent:'YAYASAN AL HASANAH MADIUN'}))">
@@ -279,8 +261,8 @@
         <div class="section-title">I. DATA PASIEN</div>
         <table class="data-table">
           ${row('Nama Pasien',      pasien)}
-          ${row('Tgl. Lahir',       dm.tanggal_lahir ? fmtDate(dm.tanggal_lahir) : '')}
-          ${row('Alamat',           dm.alamat)}
+          ${row('Tgl. Lahir',       tglLahir)}
+          ${row('Alamat',           alamat)}
           ${row('No. Rekam Medis',  noRm)}
           ${row('Dokter Pemeriksa', dokter)}
           ${row('Waktu Pemeriksaan', tglDt)}
@@ -301,9 +283,9 @@
       <div class="section">
         <div class="section-title">III. ANAMNESIS</div>
         <table class="data-table">
-          ${row('Keluhan Utama',               dm.keluhan_utama,               true)}
-          ${row('Riwayat Penyakit Sekarang',   dm.riwayat_penyakit_sekarang,   true)}
-          ${row('Riwayat Penyakit Keluarga',   dm.riwayat_penyakit_keluarga,   true)}
+          ${row('Keluhan Utama',             dm.keluhan_utama,             true)}
+          ${row('Riwayat Penyakit Sekarang', dm.riwayat_penyakit_sekarang, true)}
+          ${row('Riwayat Penyakit Keluarga', dm.riwayat_penyakit_keluarga, true)}
         </table>
       </div>
 
@@ -337,7 +319,7 @@
       <!-- ═══ TANDA TANGAN ═══ -->
       <div class="surat-footer">
         <div class="ttd-area">
-          <div class="ttd-place">Madiun,&nbsp;(Tanggal Periksa)</div>
+          <div class="ttd-place">Madiun, ${fmtDate(data.waktu_pemeriksaan)}</div>
           <div class="ttd-role">Dokter Pemeriksa</div>
           <div class="ttd-line"></div>
           <div class="ttd-name">(${dokter})</div>
@@ -352,15 +334,24 @@
       `;
     }
 
+    /* ─── Fungsi format tanggal ─── */
     function fmtDate(d) {
       if (!d) return "";
-      try { return new Date(d).toLocaleDateString("id-ID", { day:"numeric", month:"long", year:"numeric" }); }
-      catch { return d; }
+      try {
+        return new Date(d).toLocaleDateString("id-ID", {
+          day: "numeric", month: "long", year: "numeric"
+        });
+      } catch { return d; }
     }
+
     function fmtDateTime(d) {
       if (!d) return "-";
-      try { return new Date(d).toLocaleString("id-ID", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" }); }
-      catch { return d; }
+      try {
+        return new Date(d).toLocaleString("id-ID", {
+          day: "numeric", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit"
+        });
+      } catch { return d; }
     }
   </script>
 

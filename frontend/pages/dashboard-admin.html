@@ -4,973 +4,1002 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard Admin — SmartERM</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --purple:       #6c63e8;
-      --purple-deep:  #4a3fc0;
-      --purple-light: #8f8af0;
-      --purple-pale:  #b8b5f5;
-      --purple-bg:    #f0efff;
-      --purple-border:#ddd8ff;
+      --purple:        #5b5bd6;
+      --purple-dark:   #4646b5;
+      --purple-bg:     #f0f0ff;
+      --purple-border: rgba(91,91,214,0.15);
+      --text:          #111827;
+      --text-soft:     #374151;
+      --text-muted:    #6b7280;
+      --border:        #e5e7eb;
+      --bg:            #f5f5fb;
+      --white:         #ffffff;
+      --nav-h:         72px;
+      --side-w:        220px;
+      --teal:          #0d9488;
+      --teal-dark:     #0f766e;
+    }
+    html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); }
 
-      --teal:         #0d9488;
-      --teal-dark:    #0f766e;
-      --teal-bg:      #f0fdfa;
+    /* NAVBAR */
+    .navbar { position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h); background: white; border-bottom: 1px solid var(--border); z-index: 200; display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .nav-brand { width: var(--side-w); flex-shrink: 0; display: flex; align-items: center; gap: 0.7rem; padding: 0 1.4rem; height: 100%; border-right: 1px solid var(--border); }
+    .nav-brand-logo { width: 44px; height: 44px; border-radius: 11px; background: white; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; padding: 3px; }
+    .nav-brand-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; display: block; }
+    .nbt .top  { font-size: 0.52rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; }
+    .nbt .name { font-size: 0.84rem; font-weight: 800; color: var(--text); }
+    .nbt .sub  { font-size: 0.52rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    .nav-center { flex: 1; padding: 0 1.75rem; display: flex; flex-direction: column; justify-content: center; }
+    .app-name { display: flex; align-items: center; gap: 0.42rem; font-size: 0.93rem; font-weight: 800; color: var(--text); }
+    .admin-badge { background: #dc2626; color: white; font-size: 0.56rem; font-weight: 800; padding: 0.1rem 0.42rem; border-radius: 5px; letter-spacing: 0.04em; }
+    .workspace-label { font-size: 0.71rem; color: var(--text-muted); font-weight: 500; }
+    .nav-right { display: flex; align-items: center; gap: 0.6rem; padding: 0 1.5rem; flex-shrink: 0; }
+    .user-info { display: flex; align-items: center; gap: 0.55rem; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 999px; background: var(--purple-bg); border: 1.5px solid var(--purple-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .user-avatar svg { width: 15px; height: 15px; stroke: var(--purple); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .um .uname { font-size: 0.78rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .um .urole { font-size: 0.66rem; color: var(--text-muted); font-weight: 500; }
 
-      --gray-50:  #f7f8ff;
-      --gray-100: #eef0fb;
-      --gray-200: #dde1f5;
-      --gray-300: #c4cadf;
-      --gray-400: #9299c0;
-      --gray-500: #636b9e;
-      --gray-700: #363d6e;
-      --gray-900: #111443;
+    /* SIDEBAR */
+    .sidebar { position: fixed; top: var(--nav-h); left: 0; bottom: 0; width: var(--side-w); background: #1e1b4b; display: flex; flex-direction: column; padding: 1.4rem 0 1rem; overflow-y: auto; z-index: 100; }
+    .sb-title { font-size: 0.61rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #a5b4fc; padding: 0 1.2rem; margin-bottom: 0.55rem; }
+    .sb-nav { display: flex; flex-direction: column; gap: 0.08rem; flex: 1; }
+    .sb-link { display: flex; align-items: center; gap: 0.65rem; padding: 0.62rem 1.2rem; font-size: 0.82rem; font-weight: 600; color: #c7d2fe; cursor: pointer; border: none; background: none; width: 100%; text-align: left; text-decoration: none; transition: background 0.15s, color 0.15s; }
+    .sb-link:hover { background: rgba(255,255,255,0.08); color: white; }
+    .sb-link.active { background: #4f46e5; color: white; font-weight: 700; }
+    .licon { width: 27px; height: 27px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sb-link.active .licon { background: rgba(255,255,255,0.18); }
+    .sb-link.active .licon svg { stroke: white; }
+    .sb-link:not(.active) .licon svg { stroke: #a5b4fc; }
+    .sb-link:hover:not(.active) .licon { background: rgba(255,255,255,0.10); }
+    .sb-link:hover:not(.active) .licon svg { stroke: white; }
+    .licon svg { width: 13px; height: 13px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .sb-badge { margin-left: auto; background: #f59e0b; color: white; font-size: 0.6rem; font-weight: 800; border-radius: 999px; padding: 0.08rem 0.45rem; }
+    .sb-bottom { padding: 0.7rem 1rem 0; border-top: 1px solid rgba(255,255,255,0.10); margin-top: 1rem; }
+    .sb-infocard { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 11px; padding: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+    .sw { width: 24px; height: 24px; border-radius: 7px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sw svg { width: 12px; height: 12px; stroke: #a5b4fc; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .it { font-size: 0.66rem; font-weight: 800; color: white; }
+    .in { font-size: 0.68rem; font-weight: 800; color: #a5b4fc; }
+    .id { font-size: 0.6rem; color: #c7d2fe; font-weight: 500; margin-top: 0.12rem; line-height: 1.4; }
+    .logout-btn { display: flex; align-items: center; gap: 0.55rem; padding: 0.58rem 1.2rem; margin: 0.5rem 0.8rem; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; border: 1px solid #fecaca; background: #fff5f5; color: #dc2626; transition: background 0.15s; width: calc(100% - 1.6rem); }
+    .logout-btn:hover { background: #fee2e2; }
+    .logout-btn svg { width: 14px; height: 14px; stroke: #dc2626; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .sb-footer { padding: 0.7rem 1.2rem 0; }
+    .sb-footer p { font-size: 0.6rem; color: #818cf8; font-weight: 500; line-height: 1.6; }
 
-      --white:     #ffffff;
-      --red-500:   #ef4444;
-      --red-50:    #fef2f2;
-      --green-500: #22c55e;
-      --green-50:  #f0fdf4;
-      --amber-500: #f59e0b;
-      --amber-50:  #fffbeb;
-
-      --sidebar-w: 160px;
-      --nav-h: 114px;
-
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 18px;
-      --radius-xl: 24px;
-
-      --shadow-sm:   0 1px 4px rgba(74,63,192,.06);
-      --shadow-md:   0 4px 16px rgba(74,63,192,.10);
-      --shadow-lg:   0 8px 32px rgba(74,63,192,.13);
-      --shadow-card: 0 18px 42px rgba(74,63,192,.12);
-
-      --transition: .2s cubic-bezier(.4,0,.2,1);
-      --font: 'DM Sans', sans-serif;
-    }
-
-    html, body { height: 100%; }
-    body {
-      font-family: var(--font);
-      background: var(--gray-50);
-      color: var(--gray-900);
-      -webkit-font-smoothing: antialiased;
-      min-height: 100vh;
-    }
-
-    /* ══════════════════════════════════════
-       BRAND COLUMN  (fixed left, full height)
-    ══════════════════════════════════════ */
-    .brand-col {
-      position: fixed;
-      left: 0; top: 0;
-      width: var(--sidebar-w);
-      height: 100vh;
-      background: var(--white);
-      border-right: 1px solid var(--gray-200);
-      display: flex;
-      flex-direction: column;
-      z-index: 200;
-    }
-
-    /* logo area — matches dokter topbar height */
-    .brand-top {
-      height: var(--nav-h);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 20px;
-      border-bottom: 1px solid var(--gray-200);
-      flex-shrink: 0;
-    }
-    .brand-logo {
-      width: 36px; height: 36px; flex-shrink: 0;
-      background: var(--gray-100);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .95rem;
-    }
-    .brand-words { display: flex; flex-direction: column; line-height: 1.2; }
-    .brand-words .bw-rsia { font-size: 8px; font-weight: 700; letter-spacing: .1em; color: var(--gray-400); text-transform: uppercase; }
-    .brand-words .bw-name { font-size: 11px; font-weight: 800; color: var(--gray-900); }
-    .brand-words .bw-city { font-size: 8px; font-weight: 500; letter-spacing: .08em; color: var(--gray-400); text-transform: uppercase; }
-
-    /* sidebar nav */
-    .sidebar-nav {
-      flex: 1;
-      padding: 28px 12px 16px;
-      display: flex; flex-direction: column; gap: 2px;
-    }
-    .nav-section-label {
-      font-size: 10px; font-weight: 700; letter-spacing: .1em;
-      color: var(--gray-400); text-transform: uppercase;
-      padding: 0 8px; margin-bottom: 12px;
-    }
-    .nav-link {
-      display: flex; align-items: center; gap: 10px;
-      padding: 11px 10px;
-      border-radius: var(--radius-md);
-      font-size: 13px; font-weight: 500;
-      color: var(--gray-500);
-      cursor: pointer;
-      border: none; background: none; width: 100%; text-align: left;
-      text-decoration: none;
-      transition: background var(--transition), color var(--transition);
-      position: relative;
-    }
-    .nav-link:hover { background: var(--purple-bg); color: var(--purple); text-decoration: none; }
-    .nav-link.active { background: var(--purple-bg); color: var(--purple); font-weight: 700; }
-    .nav-link .nl-icon {
-      width: 28px; height: 28px; flex-shrink: 0;
-      background: var(--gray-100);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .9rem;
-      transition: background var(--transition);
-    }
-    .nav-link.active .nl-icon,
-    .nav-link:hover .nl-icon { background: rgba(108,99,232,.12); }
-    .nav-link .nl-badge {
-      margin-left: auto;
-      background: var(--amber-500);
-      color: white;
-      font-size: 10px; font-weight: 700;
-      border-radius: 999px;
-      padding: 1px 7px;
-      display: none;
-    }
-
-    /* system info card at bottom */
-    .sidebar-bottom {
-      padding: 12px;
-      border-top: 1px solid var(--gray-100);
-    }
-    .sys-card {
-      background: var(--purple-bg);
-      border: 1px solid var(--purple-border);
-      border-radius: var(--radius-md);
-      padding: 12px 10px;
-    }
-    .sys-card .sc-icon {
-      width: 24px; height: 24px;
-      background: var(--purple);
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .7rem; color: white;
-      margin-bottom: 8px;
-    }
-    .sys-card .sc-label { font-size: 10px; font-weight: 700; color: var(--purple-deep); margin-bottom: 2px; }
-    .sys-card .sc-name  { font-size: 11px; font-weight: 800; color: var(--gray-900); line-height: 1.3; margin-bottom: 3px; }
-    .sys-card .sc-desc  { font-size: 9px; color: var(--gray-500); line-height: 1.4; }
-
-    .btn-logout {
-      display: flex; align-items: center; gap: 8px;
-      width: 100%; margin-top: 8px;
-      padding: 9px 10px;
-      background: none;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-md);
-      font-family: var(--font); font-size: 12px; font-weight: 700;
-      color: var(--gray-500); cursor: pointer;
-      transition: border-color var(--transition), color var(--transition), background var(--transition);
-    }
-    .btn-logout:hover { border-color: var(--red-500); color: var(--red-500); background: var(--red-50); }
-
-    .sidebar-footer-copy { font-size: 9px; color: var(--gray-300); text-align: center; padding: 10px 12px 12px; line-height: 1.5; }
-
-    /* ══════════════════════════════════════
-       TOP NAVBAR  (fixed, left = sidebar-w)
-    ══════════════════════════════════════ */
-    .topnav {
-      position: fixed;
-      top: 0; left: var(--sidebar-w); right: 0;
-      height: var(--nav-h);
-      background: var(--white);
-      border-bottom: 1px solid var(--gray-200);
-      display: flex; align-items: center;
-      justify-content: space-between;
-      padding: 0 40px;
-      z-index: 100;
-    }
-    .topnav-left { display: flex; flex-direction: column; gap: 3px; }
-    .topnav-app {
-      display: flex; align-items: center; gap: 8px;
-    }
-    .topnav-app .app-name { font-size: 16px; font-weight: 800; color: var(--gray-900); }
-    .topnav-app .app-badge {
-      background: var(--purple);
-      color: white;
-      font-size: 9px; font-weight: 700;
-      padding: 2px 7px; border-radius: 999px;
-      letter-spacing: .05em;
-    }
-    .topnav-workspace { font-size: 13px; font-weight: 500; color: var(--gray-500); }
-
-    .topnav-right { display: flex; align-items: center; gap: 12px; }
-    .user-card {
-      display: flex; align-items: center; gap: 10px;
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: 14px;
-      padding: 10px 16px;
-      box-shadow: 0 8px 24px rgba(74,63,192,.07);
-    }
-    .user-card .uc-avatar {
-      width: 32px; height: 32px;
-      background: var(--purple-bg);
-      border: 1.5px solid var(--purple-border);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .85rem;
-    }
-    .user-card .uc-info { display: flex; flex-direction: column; line-height: 1.2; }
-    .user-card .uc-name { font-size: 13px; font-weight: 700; color: var(--gray-900); }
-    .user-card .uc-role { font-size: 11px; font-weight: 500; color: var(--gray-400); }
-
-    .notif-btn {
-      width: 40px; height: 40px;
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; cursor: pointer;
-      box-shadow: 0 8px 24px rgba(74,63,192,.07);
-      transition: background var(--transition);
-    }
-    .notif-btn:hover { background: var(--purple-bg); }
-
-    /* ══════════════════════════════════════
-       MAIN CONTENT
-    ══════════════════════════════════════ */
-    .main-wrap {
-      margin-left: var(--sidebar-w);
-      padding-top: var(--nav-h);
-      min-height: 100vh;
-    }
-    .main-content {
-      padding: 48px 48px;
-    }
-
-    /* section hide/show */
+    /* MAIN */
+    .main-content { margin-left: var(--side-w); padding-top: calc(var(--nav-h) + 2.5rem); padding-left: 2.5rem; padding-right: 2.5rem; padding-bottom: 3rem; min-height: 100vh; }
     .sec { display: none; }
     .sec.active { display: block; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h2 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text); margin-bottom: 0.3rem; }
+    .page-header p  { font-size: 0.87rem; color: var(--text-muted); font-weight: 500; }
 
-    /* ── Page header ── */
-    .page-hdr { margin-bottom: 32px; }
-    .page-hdr h2 { font-size: 26px; font-weight: 800; color: var(--gray-900); margin-bottom: 4px; }
-    .page-hdr p  { font-size: 14px; color: var(--gray-500); }
+    /* STAT CARDS */
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-bottom: 1.75rem; }
+    .stat-card { border-radius: 20px; padding: 1.75rem 1.5rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 170px; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+    .stat-card:hover { transform: translateY(-4px); }
+    .stat-card.purple { background: linear-gradient(145deg,#6366f1,#4f46e5); box-shadow: 0 8px 26px rgba(99,102,241,.28); }
+    .stat-card.purple:hover { box-shadow: 0 14px 40px rgba(99,102,241,.38); }
+    .stat-card.teal   { background: linear-gradient(145deg,#14b8a6,#0d9488); box-shadow: 0 8px 26px rgba(20,184,166,.26); }
+    .stat-card.teal:hover   { box-shadow: 0 14px 40px rgba(20,184,166,.36); }
+    .stat-card.indigo { background: linear-gradient(145deg,#818cf8,#6366f1); box-shadow: 0 8px 26px rgba(129,140,248,.28); }
+    .stat-card.white  { background: white; border: 1px solid var(--border); box-shadow: 0 4px 14px rgba(0,0,0,.05); }
+    .stat-card.white:hover  { box-shadow: 0 10px 30px rgba(91,91,214,.10); border-color: var(--purple-border); }
+    .sc-icon { width: 46px; height: 46px; border-radius: 999px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.85rem; flex-shrink: 0; }
+    .sc-icon svg { width: 20px; height: 20px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .stat-card.purple .sc-icon, .stat-card.teal .sc-icon, .stat-card.indigo .sc-icon { background: rgba(255,255,255,.22); }
+    .stat-card.purple .sc-icon svg, .stat-card.teal .sc-icon svg, .stat-card.indigo .sc-icon svg { stroke: white; }
+    .stat-card.white  .sc-icon { background: var(--purple-bg); border: 1px solid var(--purple-border); }
+    .stat-card.white  .sc-icon svg { stroke: var(--purple); }
+    .sc-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 0.2rem; }
+    .stat-card.purple .sc-label, .stat-card.teal .sc-label, .stat-card.indigo .sc-label { color: rgba(255,255,255,.75); }
+    .stat-card.white  .sc-label { color: var(--text-muted); }
+    .sc-value { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.15rem; }
+    .stat-card.purple .sc-value, .stat-card.teal .sc-value, .stat-card.indigo .sc-value { color: white; }
+    .stat-card.white  .sc-value { color: var(--text); }
+    .sc-sub { font-size: 0.75rem; font-weight: 500; }
+    .stat-card.purple .sc-sub, .stat-card.teal .sc-sub, .stat-card.indigo .sc-sub { color: rgba(255,255,255,.72); }
+    .stat-card.white  .sc-sub { color: var(--text-muted); }
+    .sc-arrow { position: absolute; bottom: 1.1rem; right: 1.1rem; width: 32px; height: 32px; border-radius: 999px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
+    .sc-arrow:hover { transform: scale(1.12); }
+    .sc-arrow svg { width: 13px; height: 13px; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .stat-card.purple .sc-arrow, .stat-card.teal .sc-arrow, .stat-card.indigo .sc-arrow { background: rgba(255,255,255,.22); }
+    .stat-card.purple .sc-arrow svg, .stat-card.teal .sc-arrow svg, .stat-card.indigo .sc-arrow svg { stroke: white; }
+    .stat-card.white  .sc-arrow { background: var(--purple-bg); }
+    .stat-card.white  .sc-arrow svg { stroke: var(--purple); }
 
-    /* ── Stat grid — same card style as dokter action cards ── */
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      margin-bottom: 36px;
-    }
+    /* DATA CARD */
+    .data-card { background: white; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,.04); overflow: hidden; margin-bottom: 1.5rem; }
+    .data-card-header { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); background: white; gap: 0.75rem; flex-wrap: wrap; }
+    .data-card-header h3 { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .data-card-header-actions { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; }
 
-    /* large action cards — mirror dokter purple/teal/white cards */
-    .stat-card {
-      border-radius: var(--radius-lg);
-      padding: 32px 28px;
-      display: flex; flex-direction: column;
-      min-height: 160px;
-      position: relative; overflow: hidden;
-      cursor: default;
-      transition: transform var(--transition), box-shadow var(--transition);
-    }
-    .stat-card:hover { transform: translateY(-2px); }
-
-    .stat-card.purple {
-      background: linear-gradient(135deg, #7b6ff5 0%, var(--purple-deep) 100%);
-      box-shadow: 0 18px 42px rgba(108,99,232,.28);
-      color: white;
-    }
-    .stat-card.teal {
-      background: linear-gradient(135deg, #12aaa8 0%, var(--teal-dark) 100%);
-      box-shadow: 0 18px 42px rgba(13,148,136,.25);
-      color: white;
-    }
-    .stat-card.white {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      box-shadow: var(--shadow-card);
-      color: var(--gray-900);
-    }
-
-    .sc-icon-circle {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem;
-      margin-bottom: 16px;
-      flex-shrink: 0;
-    }
-    .stat-card.purple .sc-icon-circle { background: rgba(255,255,255,.18); }
-    .stat-card.teal   .sc-icon-circle { background: rgba(255,255,255,.18); }
-    .stat-card.white  .sc-icon-circle { background: var(--purple-bg); }
-
-    .sc-label { font-size: 12px; font-weight: 600; opacity: .75; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .05em; }
-    .stat-card.white .sc-label { color: var(--gray-500); opacity: 1; }
-
-    .sc-value {
-      font-size: 2.8rem; font-weight: 800; line-height: 1;
-      margin-bottom: 4px;
-    }
-    .stat-card.white .sc-value { color: var(--gray-900); }
-
-    .sc-sub { font-size: 12px; opacity: .65; }
-    .stat-card.white .sc-sub { color: var(--gray-400); opacity: 1; }
-
-    /* arrow button at bottom-right */
-    .sc-arrow {
-      position: absolute; bottom: 20px; right: 20px;
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-      transition: background var(--transition), transform var(--transition);
-    }
-    .stat-card.purple .sc-arrow,
-    .stat-card.teal   .sc-arrow { background: rgba(255,255,255,.2); color: white; }
-    .stat-card.white  .sc-arrow { background: var(--purple-bg); color: var(--purple); }
-    .sc-arrow:hover { transform: scale(1.1); }
-
-    /* ── Tip / info box — same as dokter ── */
-    .tip-box {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg);
-      padding: 28px 28px;
-      display: flex; align-items: flex-start; gap: 18px;
-      box-shadow: 0 10px 28px rgba(74,63,192,.05);
-      margin-bottom: 36px;
-    }
-    .tip-ico {
-      width: 52px; height: 52px; flex-shrink: 0;
-      background: var(--purple-bg);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem;
-    }
-    .tip-body .tip-title { font-size: 14px; font-weight: 700; color: var(--gray-900); margin-bottom: 6px; }
-    .tip-body .tip-desc  { font-size: 13px; color: var(--gray-500); line-height: 1.6; }
-    .tip-body .tip-desc b { color: var(--purple); }
-
-    /* ── Cards (table wrapper) ── */
-    .data-card {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--gray-200);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-      margin-bottom: 28px;
-    }
-    .data-card-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    .data-card-header h3 { font-size: 14px; font-weight: 700; color: var(--gray-900); }
-    .data-card-body { padding: 0; }
-
-    /* tables */
+    /* TABLE */
     .tbl-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    thead { background: var(--gray-50); }
-    thead th { padding: 11px 20px; text-align: left; font-weight: 700; font-size: 11px; color: var(--gray-500); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--gray-100); }
-    tbody td { padding: 14px 20px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); vertical-align: middle; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    thead { background: #f9fafb; }
+    thead th { padding: 0.7rem 1.2rem; text-align: left; font-weight: 700; font-size: 0.71rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tbody td { padding: 0.85rem 1.2rem; border-bottom: 1px solid #f3f4f6; color: var(--text-soft); vertical-align: middle; }
     tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover { background: var(--gray-50); }
-    .tbl-empty { text-align: center; padding: 3rem; color: var(--gray-400); font-size: 13px; }
+    tbody tr:hover { background: #fafafa; }
+    .tbl-empty { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.83rem; }
 
-    /* badges */
-    .badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 3px 10px; border-radius: 999px;
-      font-size: 11px; font-weight: 700;
-    }
-    .badge-green  { background: var(--green-50);  color: #166534; }
-    .badge-red    { background: var(--red-50);    color: #991b1b; }
-    .badge-amber  { background: var(--amber-50);  color: #92400e; }
-    .badge-purple { background: var(--purple-bg); color: var(--purple-deep); }
+    /* FORM CARD */
+    .form-outer { max-width: 720px; margin: 0 auto; }
+    .form-card { background: white; border-radius: 18px; border: 1px solid var(--border); padding: 2rem 2.5rem; box-shadow: 0 4px 24px rgba(91,91,214,.08), 0 1px 4px rgba(0,0,0,.05); }
+    .form-section-label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--purple); background: var(--purple-bg); border: 1px solid var(--purple-border); border-radius: 7px; padding: 0.28rem 0.72rem; display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 1rem; }
+    .form-section-label svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.79rem; font-weight: 700; color: var(--text-soft); margin-bottom: 0.38rem; }
+    .required { color: #dc2626; }
+    .form-control { width: 100%; padding: 0.65rem 0.85rem; border: 1.5px solid #e2e2f0; border-radius: 10px; font-family: inherit; font-size: 0.86rem; color: var(--text); background: #fafaff; outline: none; transition: border-color 0.18s, box-shadow 0.18s; }
+    .form-control:focus { background: white; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(91,91,214,.10); }
+    .form-control::placeholder { color: #b0b4c4; font-size: 0.83rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-hint { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.26rem; }
+    .form-divider { border: none; border-top: 1px dashed #e5e7eb; margin: 1.2rem 0 1.4rem; }
+    .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid var(--border); margin-top: 0.5rem; }
 
-    /* buttons */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 8px 16px; border-radius: var(--radius-md);
-      font-family: var(--font); font-size: 13px; font-weight: 700;
-      cursor: pointer; border: none;
-      transition: filter var(--transition), transform var(--transition);
-      text-decoration: none; white-space: nowrap;
-    }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--purple) 0%, var(--purple-deep) 100%);
-      color: white;
-      box-shadow: 0 4px 14px rgba(74,63,192,.28);
-    }
-    .btn-primary:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
-    .btn-success {
-      background: linear-gradient(135deg, #12aaa8 0%, var(--teal-dark) 100%);
-      color: white;
-      box-shadow: 0 4px 14px rgba(13,148,136,.25);
-    }
-    .btn-success:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
-    .btn-outline {
-      background: transparent; color: var(--purple);
-      border: 1.5px solid var(--purple-pale);
-    }
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.58rem 1.05rem; border-radius: 10px; font-family: inherit; font-size: 0.83rem; font-weight: 700; cursor: pointer; border: none; transition: all 0.16s; white-space: nowrap; text-decoration: none; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary  { background: var(--purple); color: white; box-shadow: 0 3px 10px rgba(91,91,214,.23); }
+    .btn-primary:hover:not(:disabled) { background: var(--purple-dark); box-shadow: 0 5px 16px rgba(91,91,214,.33); }
+    .btn-success  { background: linear-gradient(135deg,#14b8a6,#0d9488); color: white; box-shadow: 0 3px 10px rgba(20,184,166,.25); }
+    .btn-success:hover:not(:disabled) { filter: brightness(1.07); }
+    .btn-danger   { background: #dc2626; color: white; box-shadow: 0 3px 10px rgba(220,38,38,.22); }
+    .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+    .btn-warning  { background: #d97706; color: white; box-shadow: 0 3px 10px rgba(217,119,6,.22); }
+    .btn-warning:hover:not(:disabled) { background: #b45309; }
+    .btn-secondary { background: #f3f4f6; color: var(--text-soft); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #e8e9ed; }
+    .btn-outline { background: transparent; color: var(--purple); border: 1.5px solid var(--purple-border); }
     .btn-outline:hover { background: var(--purple-bg); }
-    .btn-secondary {
-      background: var(--gray-100); color: var(--gray-700);
-      border: 1px solid var(--gray-200);
-    }
-    .btn-secondary:hover { background: var(--gray-200); }
-    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-sm  { padding: 0.33rem 0.65rem; font-size: 0.73rem; border-radius: 8px; }
+    .btn-lg  { padding: 0.72rem 1.6rem; font-size: 0.88rem; border-radius: 11px; }
 
-    /* form section */
-    .form-card {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--gray-200);
-      box-shadow: var(--shadow-sm);
-      padding: 28px 28px;
-      max-width: 640px;
-    }
-    .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--gray-700); margin-bottom: 6px; }
-    .required { color: var(--red-500); margin-left: 2px; }
-    .form-control {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-md);
-      font-family: var(--font); font-size: 13px;
-      color: var(--gray-900); background: var(--gray-50);
-      outline: none;
-      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
-    }
-    .form-control:focus {
-      border-color: var(--purple);
-      background: var(--white);
-      box-shadow: 0 0 0 3px rgba(108,99,232,.12);
-    }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .form-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; padding: 0.17rem 0.55rem; border-radius: 999px; font-size: 0.69rem; font-weight: 700; }
+    .badge-green  { background: #f0fdf4; color: #166534; }
+    .badge-red    { background: #fef2f2; color: #991b1b; }
+    .badge-amber  { background: #fffbeb; color: #92400e; }
+    .badge-purple { background: var(--purple-bg); color: var(--purple-dark); }
+    .badge-blue   { background: #eff6ff; color: #1d4ed8; }
 
-    /* alert */
-    .alert { padding: 12px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; border: 1px solid transparent; }
-    .alert-error   { background: var(--red-50);   color: #991b1b; border-color: #fecaca; }
-    .alert-success { background: var(--green-50); color: #166534; border-color: #bbf7d0; }
+    /* ALERTS */
+    .alert { padding: 0.8rem 1rem; border-radius: 11px; font-size: 0.82rem; font-weight: 600; margin-bottom: 1rem; border: 1px solid transparent; }
+    .alert-error   { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+    .alert-success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+    .alert-info    { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
     .d-none { display: none !important; }
 
-    /* spinner */
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      display: inline-block;
-    }
-    .spinner.dark {
-      border-color: rgba(108,99,232,.2);
-      border-top-color: var(--purple);
-    }
+    code { font-family: 'Courier New', monospace; background: var(--purple-bg); border-radius: 5px; padding: 0.1rem 0.4rem; font-size: 0.78rem; color: var(--purple-dark); }
+
+    /* SPINNER */
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; }
+    .spinner.dark { border-color: rgba(91,91,214,.2); border-top-color: var(--purple); }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* toast */
-    #toast-container {
-      position: fixed; top: 20px; right: 24px;
-      z-index: 9999;
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .toast {
-      background: var(--white); border-radius: var(--radius-md);
-      box-shadow: var(--shadow-lg);
-      padding: 13px 18px;
-      display: flex; align-items: center; gap: 10px;
-      min-width: 260px; max-width: 360px;
-      border-left: 4px solid;
-      font-size: 13px;
-      animation: slideIn .3s cubic-bezier(.4,0,.2,1);
-    }
-    .toast.success { border-color: var(--green-500); }
-    .toast.error   { border-color: var(--red-500);   }
-    .toast.info    { border-color: var(--purple);     }
-    @keyframes slideIn { from { transform: translateX(120%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+    /* TOAST */
+    #toast-container { position: fixed; top: 1.2rem; right: 1.2rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.45rem; }
+    .toast-item { background: white; border-radius: 14px; box-shadow: 0 10px 32px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.05); padding: 0.85rem 1.1rem; display: flex; align-items: center; gap: 0.7rem; min-width: 260px; font-size: 0.84rem; font-weight: 600; border: 1px solid #f0f0f5; transform: translateX(110%); opacity: 0; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease; }
+    .toast-item.show { transform: translateX(0); opacity: 1; }
+    .toast-item .ti-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .toast-item .ti-icon svg { width: 15px; height: 15px; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .toast-item.success .ti-icon { background: #f0fdf4; } .toast-item.success .ti-icon svg { stroke: #16a34a; } .toast-item.success { color: #166534; }
+    .toast-item.error   .ti-icon { background: #fef2f2; } .toast-item.error   .ti-icon svg { stroke: #dc2626; } .toast-item.error   { color: #991b1b; }
+    .toast-item.info    .ti-icon { background: #eff6ff; } .toast-item.info    .ti-icon svg { stroke: #2563eb; } .toast-item.info    { color: #1d4ed8; }
 
-    code {
-      font-family: 'Courier New', monospace;
-      background: var(--gray-100);
-      border-radius: 4px;
-      padding: 1px 6px;
-      font-size: 12px;
-      color: var(--purple-deep);
-    }
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.d-none { display: none !important; }
+    .modal-box { background: white; border-radius: 20px; padding: 2rem 2.2rem; width: 100%; max-width: 540px; box-shadow: 0 20px 60px rgba(0,0,0,0.18); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.4rem; }
+    .modal-header h3 { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+    .modal-close { background: none; border: none; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 1.1rem; }
+    .modal-close:hover { background: #f3f4f6; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+    /* TIP BOX */
+    .tip-box { background: white; border: 1px solid var(--border); border-radius: 15px; padding: 1.2rem 1.5rem; display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.75rem; }
+    .tip-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--purple-bg); border: 1px solid var(--purple-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .tip-icon svg { width: 16px; height: 16px; stroke: var(--purple); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .tip-title { font-size: 0.84rem; font-weight: 600; color: var(--text-soft); margin-bottom: 0.28rem; }
+    .tip-steps { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; line-height: 1.7; }
+    .tip-steps .link { color: var(--purple); font-weight: 700; }
 
     @media (max-width: 900px) {
-      .stat-grid { grid-template-columns: 1fr; }
+      .sidebar { display: none; } .main-content { margin-left: 0; } .nav-brand { display: none; }
+      .stat-grid { grid-template-columns: 1fr 1fr; } .form-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ════ BRAND / SIDEBAR ════ -->
-  <div class="brand-col">
-
-    <div class="brand-top">
-      <div class="brand-logo">🏥</div>
-      <div class="brand-words">
-        <span class="bw-rsia">RSIA</span>
-        <span class="bw-name">AL HASANAH</span>
-        <span class="bw-city">MADIUN</span>
-      </div>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-brand-logo">
+      <img src="/logoalhasanah.png" alt="Logo RSIA" onerror="this.style.display='none';">
     </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-section-label">Menu Admin</div>
-
-      <button class="nav-link active" onclick="showSection('dashboard')">
-        <span class="nl-icon">📊</span> Dashboard
-      </button>
-      <button class="nav-link" onclick="showSection('list-dokter')">
-        <span class="nl-icon">👨‍⚕️</span> Daftar Dokter
-      </button>
-      <button class="nav-link" onclick="showSection('tambah-dokter')">
-        <span class="nl-icon">➕</span> Tambah Dokter
-      </button>
-      <button class="nav-link" onclick="showSection('pending')">
-        <span class="nl-icon">⏳</span> Pending
-        <span id="pending-badge" class="nl-badge">0</span>
-      </button>
-    </nav>
-
-    <div class="sidebar-bottom">
-      <div class="sys-card">
-        <div class="sc-icon">🛡️</div>
-        <div class="sc-label">Sistem Internal</div>
-        <div class="sc-name">RSIA AL Hasanah Madiun</div>
-        <div class="sc-desc">Semua data pasien dilindungi sesuai kebijakan internal.</div>
-      </div>
-      <button class="btn-logout" onclick="doLogout()">
-        <span>↩</span> Keluar
-      </button>
+    <div class="nbt">
+      <div class="top">RSIA</div>
+      <div class="name">AL HASANAH</div>
+      <div class="sub">MADIUN</div>
     </div>
-
-    <div class="sidebar-footer-copy">
-      © 2025 RSIA AL Hasanah Madiun<br>SmartERM v1.0.0
-    </div>
-
   </div>
-
-  <!-- ════ TOP NAV ════ -->
-  <header class="topnav">
-    <div class="topnav-left">
-      <div class="topnav-app">
-        <span class="app-name">SmartERM</span>
-        <span class="app-badge">ADMIN</span>
-      </div>
-      <div class="topnav-workspace">Admin Workspace</div>
-    </div>
-    <div class="topnav-right">
-      <div class="user-card">
-        <div class="uc-avatar">👨‍💼</div>
-        <div class="uc-info">
-          <span class="uc-name" id="user-name">Admin</span>
-          <span class="uc-role">Administrator</span>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- ════ MAIN WRAP ════ -->
-  <div class="main-wrap">
-    <main class="main-content">
-
-      <!-- ══ DASHBOARD ══ -->
-      <section id="sec-dashboard" class="sec active">
-        <div class="page-hdr">
-          <h2>Selamat Datang! 👋</h2>
-          <p id="dash-subtitle">Pantau dan kelola sistem SmartERM dari panel admin.</p>
-        </div>
-
-        <!-- 3 stat cards -->
-        <div class="stat-grid">
-          <div class="stat-card purple">
-            <div class="sc-icon-circle">👨‍⚕️</div>
-            <div class="sc-label">Total Dokter</div>
-            <div class="sc-value" id="stat-total-dokter">—</div>
-            <div class="sc-sub">Akun dokter terdaftar</div>
-            <button class="sc-arrow" onclick="showSection('list-dokter')">→</button>
-          </div>
-          <div class="stat-card teal">
-            <div class="sc-icon-circle">✅</div>
-            <div class="sc-label">Dokter Aktif</div>
-            <div class="sc-value" id="stat-aktif">—</div>
-            <div class="sc-sub">Siap menggunakan sistem</div>
-            <button class="sc-arrow" onclick="showSection('list-dokter')">→</button>
-          </div>
-          <div class="stat-card white">
-            <div class="sc-icon-circle">⏳</div>
-            <div class="sc-label">Pending Aktivasi</div>
-            <div class="sc-value" id="stat-pending">—</div>
-            <div class="sc-sub">Menunggu persetujuan</div>
-            <button class="sc-arrow" onclick="showSection('pending')">→</button>
-          </div>
-        </div>
-
-        <!-- tip box -->
-        <div class="tip-box">
-          <div class="tip-ico">⚙️</div>
-          <div class="tip-body">
-            <div class="tip-title">Cara mengelola sistem:</div>
-            <div class="tip-desc">
-              Klik <b>"Tambah Dokter"</b> untuk membuat akun dokter baru yang langsung aktif →
-              pantau <b>"Pending Aktivasi"</b> untuk menyetujui admin baru →
-              gunakan <b>"Daftar Dokter"</b> untuk memantau seluruh akun.
-            </div>
-          </div>
-        </div>
-
-        <!-- pending preview table -->
-        <div class="data-card">
-          <div class="data-card-header">
-            <h3>⏳ Menunggu Aktivasi</h3>
-            <button class="btn btn-outline btn-sm" onclick="showSection('pending')">Lihat Semua</button>
-          </div>
-          <div class="data-card-body" id="pending-preview">
-            <div class="tbl-empty">Memuat data...</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ══ LIST DOKTER ══ -->
-      <section id="sec-list-dokter" class="sec">
-        <div class="page-hdr">
-          <h2>Daftar Dokter 👨‍⚕️</h2>
-          <p>Semua akun dokter yang terdaftar di sistem.</p>
-        </div>
-        <div class="data-card">
-          <div class="data-card-header">
-            <h3>Dokter Terdaftar</h3>
-            <button class="btn btn-primary btn-sm" onclick="showSection('tambah-dokter')">+ Tambah Dokter</button>
-          </div>
-          <div class="data-card-body">
-            <div class="tbl-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Nama Lengkap</th>
-                    <th>Username</th>
-                    <th>Spesialisasi</th>
-                    <th>No. STR</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="tabel-dokter">
-                  <tr><td colspan="6" class="tbl-empty">Memuat data...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ══ TAMBAH DOKTER ══ -->
-      <section id="sec-tambah-dokter" class="sec">
-        <div class="page-hdr">
-          <h2>Tambah Akun Dokter ➕</h2>
-          <p>Buat akun dokter baru. Dokter yang dibuat admin langsung aktif.</p>
-        </div>
-        <div class="form-card">
-          <div id="alert-dokter" class="alert d-none"></div>
-          <div id="success-dokter" class="alert d-none"></div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Nama Lengkap <span class="required">*</span></label>
-              <input type="text" id="d-nama" class="form-control" placeholder="dr. Nama Dokter, Sp.OG" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Username <span class="required">*</span></label>
-              <input type="text" id="d-username" class="form-control" placeholder="dr_nama" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Password <span class="required">*</span></label>
-              <input type="password" id="d-password" class="form-control" placeholder="Min. 6 karakter" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Spesialisasi <span class="required">*</span></label>
-              <input type="text" id="d-spesialisasi" class="form-control" placeholder="Obstetri & Ginekologi" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Nomor STR <span class="required">*</span></label>
-            <input type="text" id="d-no-str" class="form-control" placeholder="Nomor Surat Tanda Registrasi" />
-            <p class="form-hint">Surat Tanda Registrasi dokter — wajib diisi sesuai regulasi.</p>
-          </div>
-
-          <div style="display:flex;gap:10px;margin-top:8px;">
-            <button class="btn btn-primary" id="btn-tambah-dokter" onclick="doTambahDokter()">
-              Simpan Akun Dokter
-            </button>
-            <button class="btn btn-secondary" onclick="showSection('list-dokter')">Batal</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ══ PENDING AKTIVASI ══ -->
-      <section id="sec-pending" class="sec">
-        <div class="page-hdr">
-          <h2>Pending Aktivasi ⏳</h2>
-          <p>User yang sudah daftar namun belum diaktifkan.</p>
-        </div>
-        <div class="data-card">
-          <div class="data-card-header">
-            <h3>Menunggu Persetujuan</h3>
-            <button class="btn btn-outline btn-sm" onclick="loadPending()">🔄 Refresh</button>
-          </div>
-          <div class="data-card-body">
-            <div class="tbl-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Nama</th>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Terdaftar</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="tabel-pending">
-                  <tr><td colspan="6" class="tbl-empty">Memuat data...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </main>
+  <div class="nav-center">
+    <div class="app-name">SmartERM <span class="admin-badge">ADMIN</span></div>
+    <span class="workspace-label">Admin Workspace</span>
   </div>
+  <div class="nav-right">
+    <div class="user-info">
+      <div class="user-avatar">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="um">
+        <div class="uname" id="user-name">Admin</div>
+        <div class="urole">Administrator</div>
+      </div>
+    </div>
+  </div>
+</nav>
 
-  <div id="toast-container"></div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-title">Menu Admin</div>
+  <nav class="sb-nav">
+    <button class="sb-link active" data-section="dashboard">
+      <div class="licon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>Dashboard
+    </button>
+    <button class="sb-link" data-section="list-dokter">
+      <div class="licon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>Daftar Dokter
+    </button>
+    <button class="sb-link" data-section="tambah-dokter">
+      <div class="licon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>Tambah Dokter
+    </button>
+    <button class="sb-link" data-section="list-admin">
+      <div class="licon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Daftar Admin
+    </button>
+    <button class="sb-link" data-section="pending">
+      <div class="licon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>Pending
+      <span id="pending-badge" class="sb-badge" style="display:none">0</span>
+    </button>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-infocard">
+      <div class="sw"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div>
+        <div class="it">Sistem Internal</div>
+        <div class="in">RSIA AL Hasanah Madiun</div>
+        <div class="id">Semua data pasien dilindungi sesuai kebijakan internal.</div>
+      </div>
+    </div>
+  </div>
+  <button class="logout-btn" id="btn-logout">
+    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Keluar
+  </button>
+  <div class="sb-footer"><p>© 2025 RSIA AL Hasanah Madiun<br>SmartERM v1.0.0</p></div>
+</aside>
 
-  <script type="module">
-    import { listDokter, pendingAktivasi, aktivasiUser, createDokter } from "../js/api.js";
-    import { guardPage, renderUserInfo, logout } from "../js/auth.js";
-    import { showToast, formatDateTime } from "../js/ui.js";
+<!-- MAIN -->
+<main class="main-content">
 
-    // ─── Guard: hanya admin boleh masuk ──────────────────────
-    guardPage("admin");
-    renderUserInfo("user-name");
+  <!-- DASHBOARD -->
+  <section id="sec-dashboard" class="sec active">
+    <div class="page-header">
+      <h2>Selamat Datang! 👋</h2>
+      <p>Pantau dan kelola sistem SmartERM dari panel admin.</p>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card purple" data-goto="list-dokter" style="cursor:pointer">
+        <div class="sc-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div><div class="sc-label">Total Dokter</div><div class="sc-value" id="stat-total-dokter">—</div><div class="sc-sub">Akun dokter terdaftar</div></div>
+        <button class="sc-arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      </div>
+      <div class="stat-card indigo" data-goto="list-admin" style="cursor:pointer">
+        <div class="sc-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div><div class="sc-label">Total Admin</div><div class="sc-value" id="stat-total-admin">—</div><div class="sc-sub">Akun administrator</div></div>
+        <button class="sc-arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      </div>
+      <div class="stat-card teal" data-goto="tambah-dokter" style="cursor:pointer">
+        <div class="sc-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        <div><div class="sc-label">Tambah Dokter</div><div class="sc-value" style="font-size:1.4rem;letter-spacing:-0.02em;">Buat Akun</div><div class="sc-sub">Tambah akun dokter baru</div></div>
+        <button class="sc-arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      </div>
+      <div class="stat-card white" data-goto="pending" style="cursor:pointer">
+        <div class="sc-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div><div class="sc-label">Pending Aktivasi</div><div class="sc-value" id="stat-pending">—</div><div class="sc-sub">Menunggu persetujuan</div></div>
+        <button class="sc-arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div>
+        <div class="tip-title">Cara mengelola sistem:</div>
+        <div class="tip-steps">
+          Klik <span class="link">"Tambah Dokter"</span> untuk membuat akun dokter →
+          kelola <span class="link">"Daftar Admin"</span> untuk atur akun administrator →
+          pantau <span class="link">"Pending"</span> untuk aktivasi pendaftar baru.
+        </div>
+      </div>
+    </div>
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>⏳ Menunggu Aktivasi</h3>
+        <button class="btn btn-outline btn-sm" data-goto="pending">Lihat Semua</button>
+      </div>
+      <div id="pending-preview"><div class="tbl-empty"><span class="spinner dark"></span> Memuat...</div></div>
+    </div>
+  </section>
 
-    // ─── Section switcher ─────────────────────────────────────
-    window.showSection = function(name) {
-      document.querySelectorAll(".sec").forEach(s => s.classList.remove("active"));
-      document.getElementById(`sec-${name}`).classList.add("active");
+  <!-- DAFTAR DOKTER -->
+  <section id="sec-list-dokter" class="sec">
+    <div class="page-header"><h2>Daftar Dokter 👨‍⚕️</h2><p>Semua akun dokter terdaftar. Bisa diedit atau dihapus.</p></div>
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Dokter Terdaftar</h3>
+        <div class="data-card-header-actions">
+          <button class="btn btn-outline btn-sm" id="btn-refresh-dokter">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh
+          </button>
+          <button class="btn btn-primary btn-sm" data-goto="tambah-dokter">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Dokter
+          </button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Nama Lengkap</th><th>Username</th><th>Spesialisasi</th><th>No. STR</th><th>Status</th><th style="text-align:center;">Aksi</th></tr></thead>
+          <tbody id="tabel-dokter"><tr><td colspan="7" class="tbl-empty"><span class="spinner dark"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-      document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
-      const linkMap = { "dashboard": 0, "list-dokter": 1, "tambah-dokter": 2, "pending": 3 };
-      document.querySelectorAll(".nav-link")[linkMap[name]]?.classList.add("active");
+  <!-- TAMBAH DOKTER -->
+  <section id="sec-tambah-dokter" class="sec">
+    <div class="page-header"><h2>Tambah Akun Dokter ➕</h2><p>Buat akun dokter baru. Akun langsung aktif.</p></div>
+    <div class="form-outer">
+      <div class="form-card">
+        <div id="alert-dokter" class="alert d-none"></div>
+        <div id="success-dokter" class="alert d-none"></div>
+        <div class="form-section-label">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Identitas Dokter
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Nama Lengkap <span class="required">*</span></label><input type="text" id="d-nama" class="form-control" placeholder="dr. Nama Dokter, Sp.OG"/></div>
+          <div class="form-group"><label class="form-label">Username <span class="required">*</span></label><input type="text" id="d-username" class="form-control" placeholder="dr_nama"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Password <span class="required">*</span></label><input type="password" id="d-password" class="form-control" placeholder="Min. 6 karakter"/></div>
+          <div class="form-group"><label class="form-label">Spesialisasi <span class="required">*</span></label><input type="text" id="d-spesialisasi" class="form-control" placeholder="Obstetri &amp; Ginekologi"/></div>
+        </div>
+        <hr class="form-divider"/>
+        <div class="form-section-label">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Registrasi Profesi
+        </div>
+        <div class="form-group"><label class="form-label">Nomor STR <span class="required">*</span></label><input type="text" id="d-no-str" class="form-control" placeholder="Nomor Surat Tanda Registrasi"/><p class="form-hint">Surat Tanda Registrasi dokter — wajib diisi sesuai regulasi.</p></div>
+        <div class="form-actions">
+          <button class="btn btn-secondary" data-goto="list-dokter">Batal</button>
+          <button class="btn btn-primary btn-lg" id="btn-tambah-dokter">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Simpan Akun Dokter
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
 
-      if (name === "list-dokter") loadDokter();
-      if (name === "pending")     loadPending();
-      if (name === "dashboard")   loadDashboard();
-    };
+  <!-- DAFTAR ADMIN -->
+  <section id="sec-list-admin" class="sec">
+    <div class="page-header"><h2>Daftar Admin 🛡️</h2><p>Kelola akun administrator sistem.</p></div>
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Administrator Terdaftar</h3>
+        <div class="data-card-header-actions">
+          <button class="btn btn-outline btn-sm" id="btn-refresh-admin">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-buka-tambah-admin">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Admin
+          </button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Nama Lengkap</th><th>Username</th><th>Status</th><th>Terdaftar</th><th style="text-align:center;">Aksi</th></tr></thead>
+          <tbody id="tabel-admin"><tr><td colspan="6" class="tbl-empty"><span class="spinner dark"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-    // ─── Load Dashboard ───────────────────────────────────────
-    async function loadDashboard() {
-      try {
-        const [dokterData, pendingData] = await Promise.all([
-          listDokter(), pendingAktivasi()
-        ]);
+  <!-- PENDING AKTIVASI -->
+  <section id="sec-pending" class="sec">
+    <div class="page-header"><h2>Pending Aktivasi ⏳</h2><p>User yang sudah daftar namun belum diaktifkan.</p></div>
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Menunggu Persetujuan</h3>
+        <button class="btn btn-outline btn-sm" id="btn-refresh-pending">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh
+        </button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Nama</th><th>Username</th><th>Role</th><th>Terdaftar</th><th>Aksi</th></tr></thead>
+          <tbody id="tabel-pending"><tr><td colspan="6" class="tbl-empty"><span class="spinner dark"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-        document.getElementById("stat-total-dokter").textContent = dokterData.total;
-        document.getElementById("stat-aktif").textContent = dokterData.data.filter(d => d.aktif).length;
-        document.getElementById("stat-pending").textContent = pendingData.total_pending;
+</main>
 
-        // Badge di sidebar
-        const badge = document.getElementById("pending-badge");
-        if (pendingData.total_pending > 0) {
-          badge.textContent = pendingData.total_pending;
-          badge.style.display = "inline-flex";
-        } else {
-          badge.style.display = "none";
-        }
+<!-- MODAL EDIT DOKTER -->
+<div id="modal-edit-dokter" class="modal-overlay d-none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>✏️ Edit Data Dokter</h3>
+      <button class="modal-close" data-close="modal-edit-dokter">✕</button>
+    </div>
+    <div id="alert-edit-dokter" class="alert d-none"></div>
+    <input type="hidden" id="edit-dokter-id"/>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nama Lengkap <span class="required">*</span></label><input type="text" id="edit-d-nama" class="form-control"/></div>
+      <div class="form-group"><label class="form-label">Username <span class="required">*</span></label><input type="text" id="edit-d-username" class="form-control"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Spesialisasi</label><input type="text" id="edit-d-spesialisasi" class="form-control"/></div>
+      <div class="form-group"><label class="form-label">No. STR</label><input type="text" id="edit-d-no-str" class="form-control"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Password Baru <span style="color:var(--text-muted);font-weight:500;">(kosong = tidak diubah)</span></label><input type="password" id="edit-d-password" class="form-control" placeholder="Min. 6 karakter"/></div>
+      <div class="form-group"><label class="form-label">Status Akun</label>
+        <select id="edit-d-aktif" class="form-control">
+          <option value="true">✅ Aktif</option>
+          <option value="false">❌ Nonaktif</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close="modal-edit-dokter">Batal</button>
+      <button class="btn btn-primary btn-lg" id="btn-simpan-edit-dokter">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
 
-        // Pending preview
-        const preview = document.getElementById("pending-preview");
-        if (pendingData.total_pending === 0) {
-          preview.innerHTML = `<div class="tbl-empty">✅ Tidak ada yang menunggu aktivasi.</div>`;
-        } else {
-          preview.innerHTML = `
-            <div class="tbl-wrap">
-              <table>
-                <thead><tr><th>Nama</th><th>Role</th><th>Terdaftar</th><th>Aksi</th></tr></thead>
-                <tbody>
-                  ${pendingData.data.slice(0,5).map(u => `
-                    <tr>
-                      <td><strong>${u.nama}</strong></td>
-                      <td><span class="badge badge-amber">${u.role}</span></td>
-                      <td>${formatDateTime(u.terdaftar)}</td>
-                      <td><button class="btn btn-success btn-sm" onclick="doAktivasi(${u.id}, '${u.nama}')">✅ Aktifkan</button></td>
-                    </tr>
-                  `).join("")}
-                </tbody>
-              </table>
-            </div>
-          `;
-        }
-      } catch (err) {
-        showToast("Gagal memuat dashboard: " + err.message, "error");
-      }
+<!-- MODAL TAMBAH ADMIN -->
+<div id="modal-tambah-admin" class="modal-overlay d-none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>🛡️ Tambah Administrator</h3>
+      <button class="modal-close" data-close="modal-tambah-admin">✕</button>
+    </div>
+    <div id="alert-tambah-admin" class="alert d-none"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nama Lengkap <span class="required">*</span></label><input type="text" id="new-admin-nama" class="form-control" placeholder="Nama Admin"/></div>
+      <div class="form-group"><label class="form-label">Username <span class="required">*</span></label><input type="text" id="new-admin-username" class="form-control" placeholder="admin_nama"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Password <span class="required">*</span></label><input type="password" id="new-admin-password" class="form-control" placeholder="Min. 6 karakter"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close="modal-tambah-admin">Batal</button>
+      <button class="btn btn-primary btn-lg" id="btn-simpan-tambah-admin">Buat Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT ADMIN -->
+<div id="modal-edit-admin" class="modal-overlay d-none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>✏️ Edit Administrator</h3>
+      <button class="modal-close" data-close="modal-edit-admin">✕</button>
+    </div>
+    <div id="alert-edit-admin" class="alert d-none"></div>
+    <input type="hidden" id="edit-admin-id"/>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nama Lengkap <span class="required">*</span></label><input type="text" id="edit-admin-nama" class="form-control"/></div>
+      <div class="form-group"><label class="form-label">Username <span class="required">*</span></label><input type="text" id="edit-admin-username" class="form-control"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Password Baru <span style="color:var(--text-muted);font-weight:500;">(kosong = tidak diubah)</span></label><input type="password" id="edit-admin-password" class="form-control" placeholder="Min. 6 karakter"/></div>
+      <div class="form-group"><label class="form-label">Status Akun</label>
+        <select id="edit-admin-aktif" class="form-control">
+          <option value="true">✅ Aktif</option>
+          <option value="false">❌ Nonaktif</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close="modal-edit-admin">Batal</button>
+      <button class="btn btn-primary btn-lg" id="btn-simpan-edit-admin">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SATU BLOK SCRIPT MODULE — semua logika di sini
+     Tidak ada script non-module yang memanggil fungsi dari module,
+     sehingga tidak ada ReferenceError.
+════════════════════════════════════════════════════════════ -->
+<script type="module">
+  import {
+    listDokter, createDokter, editDokter, hapusDokter,
+    listAdmin,  createAdmin,  editAdmin,  hapusAdmin,
+    pendingAktivasi, aktivasiUser
+  } from "../js/api.js";
+  import { guardPage, renderUserInfo, clearSession } from "../js/auth.js";
+
+  // ── Guard & user info ────────────────────────────────────────────────────────
+  guardPage("admin");
+  renderUserInfo("user-name");
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  const TOAST_ICONS = {
+    success: '<polyline points="20 6 9 17 4 12"/>',
+    error:   '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    info:    '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
+  };
+
+  function showToast(msg, type = 'info') {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast-item ${type}`;
+    t.innerHTML = `<div class="ti-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${TOAST_ICONS[type]||TOAST_ICONS.info}</svg></div><span>${msg}</span>`;
+    c.appendChild(t);
+    requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3400);
+  }
+
+  function formatDateTime(d) {
+    if (!d) return '-';
+    try { return new Date(d).toLocaleString('id-ID', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
+    catch { return d; }
+  }
+
+  function escStr(s) {
+    return String(s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');
+  }
+
+  function showAlert(id, type, msg) {
+    const el = document.getElementById(id);
+    el.className = `alert alert-${type}`;
+    el.innerHTML = msg;
+    el.classList.remove('d-none');
+  }
+
+  function hideAlert(id) {
+    document.getElementById(id).classList.add('d-none');
+  }
+
+  function openModal(id) { document.getElementById(id).classList.remove('d-none'); }
+  function closeModal(id) { document.getElementById(id).classList.add('d-none'); }
+
+  // ── Navigasi seksi ───────────────────────────────────────────────────────────
+  const SECTION_LOAD = {
+    'dashboard':     loadDashboard,
+    'list-dokter':   loadDokter,
+    'list-admin':    loadAdmin,
+    'pending':       loadPending,
+    'tambah-dokter': null,
+  };
+
+  function showSection(name) {
+    document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+    const sec = document.getElementById('sec-' + name);
+    if (sec) sec.classList.add('active');
+
+    document.querySelectorAll('.sb-link').forEach(l => {
+      l.classList.toggle('active', l.dataset.section === name);
+    });
+
+    if (SECTION_LOAD[name]) SECTION_LOAD[name]();
+  }
+
+  // Event delegation untuk navigasi (sidebar links, stat cards, tombol goto)
+  document.addEventListener('click', e => {
+    const gotoEl = e.target.closest('[data-goto]');
+    if (gotoEl) { showSection(gotoEl.dataset.goto); return; }
+
+    const sectionEl = e.target.closest('[data-section]');
+    if (sectionEl) { showSection(sectionEl.dataset.section); return; }
+
+    const closeEl = e.target.closest('[data-close]');
+    if (closeEl) { closeModal(closeEl.dataset.close); return; }
+  });
+
+  // ── Logout ───────────────────────────────────────────────────────────────────
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    if (confirm('Yakin ingin keluar?')) {
+      clearSession();
+      window.location.href = '../index.html';
     }
+  });
 
-    // ─── Load Daftar Dokter ────────────────────────────────────
-    async function loadDokter() {
-      const tbody = document.getElementById("tabel-dokter");
-      tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty"><span class="spinner dark"></span></td></tr>`;
-      try {
-        const data = await listDokter();
-        if (data.total === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">Belum ada dokter terdaftar.</td></tr>`;
-          return;
-        }
-        tbody.innerHTML = data.data.map((d, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td><strong>${d.nama}</strong></td>
-            <td><code>${d.username}</code></td>
-            <td>${d.spesialisasi || "-"}</td>
-            <td>${d.no_str || "-"}</td>
-            <td>${d.aktif
-              ? '<span class="badge badge-green">✅ Aktif</span>'
-              : '<span class="badge badge-red">❌ Nonaktif</span>'
-            }</td>
-          </tr>
-        `).join("");
-      } catch (err) {
-        showToast("Gagal memuat daftar dokter: " + err.message, "error");
+  // ── Refresh buttons ──────────────────────────────────────────────────────────
+  document.getElementById('btn-refresh-dokter').addEventListener('click', loadDokter);
+  document.getElementById('btn-refresh-admin').addEventListener('click', loadAdmin);
+  document.getElementById('btn-refresh-pending').addEventListener('click', loadPending);
+
+  // ═══════════════════════════════════════════════════════════
+  // DASHBOARD
+  // ═══════════════════════════════════════════════════════════
+  async function loadDashboard() {
+    try {
+      const [dokterData, adminData, pendingData] = await Promise.all([
+        listDokter(), listAdmin(), pendingAktivasi()
+      ]);
+      document.getElementById('stat-total-dokter').textContent = dokterData.total ?? '0';
+      document.getElementById('stat-total-admin').textContent  = adminData.total  ?? '0';
+      document.getElementById('stat-pending').textContent      = pendingData.total_pending ?? '0';
+
+      const badge = document.getElementById('pending-badge');
+      if (pendingData.total_pending > 0) {
+        badge.textContent = pendingData.total_pending;
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
       }
-    }
 
-    // ─── Load Pending Aktivasi ─────────────────────────────────
-    window.loadPending = async function() {
-      const tbody = document.getElementById("tabel-pending");
-      tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty"><span class="spinner dark"></span></td></tr>`;
-      try {
-        const data = await pendingAktivasi();
-        if (data.total_pending === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">✅ Tidak ada yang menunggu aktivasi.</td></tr>`;
-          return;
-        }
-        tbody.innerHTML = data.data.map(u => `
+      const preview = document.getElementById('pending-preview');
+      if (!pendingData.total_pending) {
+        preview.innerHTML = `<div class="tbl-empty">✅ Tidak ada yang menunggu aktivasi.</div>`;
+      } else {
+        const rows = pendingData.data.slice(0,5).map(u => `
           <tr>
-            <td>${u.id}</td>
             <td><strong>${u.nama}</strong></td>
-            <td><code>${u.username}</code></td>
             <td><span class="badge badge-amber">${u.role}</span></td>
             <td>${formatDateTime(u.terdaftar)}</td>
-            <td>
-              <button class="btn btn-success btn-sm" onclick="doAktivasi(${u.id}, '${u.nama}')">
-                ✅ Aktifkan
-              </button>
-            </td>
-          </tr>
-        `).join("");
-      } catch (err) {
-        showToast("Gagal memuat data pending: " + err.message, "error");
+            <td><button class="btn btn-success btn-sm" data-aktivasi-id="${u.id}" data-aktivasi-nama="${escStr(u.nama)}">✅ Aktifkan</button></td>
+          </tr>`).join('');
+        preview.innerHTML = `<div class="tbl-wrap"><table>
+          <thead><tr><th>Nama</th><th>Role</th><th>Terdaftar</th><th>Aksi</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
       }
-    };
+    } catch(err) {
+      showToast('Gagal memuat dashboard: ' + err.message, 'error');
+    }
+  }
 
-    // ─── Aktivasi User ─────────────────────────────────────────
-    window.doAktivasi = async function(userId, nama) {
-      if (!confirm(`Aktifkan akun "${nama || userId}"?`)) return;
+  // ═══════════════════════════════════════════════════════════
+  // DAFTAR DOKTER
+  // ═══════════════════════════════════════════════════════════
+  async function loadDokter() {
+    const tbody = document.getElementById('tabel-dokter');
+    tbody.innerHTML = `<tr><td colspan="7" class="tbl-empty"><span class="spinner dark"></span></td></tr>`;
+    try {
+      const data = await listDokter();
+      if (!data.total) {
+        tbody.innerHTML = `<tr><td colspan="7" class="tbl-empty">Belum ada dokter terdaftar.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.data.map((d, i) => `
+        <tr>
+          <td>${i+1}</td>
+          <td><strong>${d.nama}</strong></td>
+          <td><code>${d.username}</code></td>
+          <td>${d.spesialisasi || '-'}</td>
+          <td>${d.no_str || '-'}</td>
+          <td>${d.aktif
+            ? '<span class="badge badge-green">✅ Aktif</span>'
+            : '<span class="badge badge-red">❌ Nonaktif</span>'}</td>
+          <td style="text-align:center;">
+            <div style="display:flex;gap:0.35rem;justify-content:center;">
+              <button class="btn btn-warning btn-sm"
+                data-edit-dokter='${JSON.stringify({id:d.id,nama:d.nama,username:d.username,spesialisasi:d.spesialisasi||'',no_str:d.no_str||'',aktif:d.aktif})}'>
+                ✏️ Edit
+              </button>
+              <button class="btn btn-danger btn-sm" data-hapus-dokter-id="${d.id}" data-hapus-dokter-nama="${escStr(d.nama)}">
+                🗑️ Hapus
+              </button>
+            </div>
+          </td>
+        </tr>`).join('');
+    } catch(err) {
+      showToast('Gagal memuat daftar dokter: ' + err.message, 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // DAFTAR ADMIN
+  // ═══════════════════════════════════════════════════════════
+  async function loadAdmin() {
+    const tbody = document.getElementById('tabel-admin');
+    tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty"><span class="spinner dark"></span></td></tr>`;
+    try {
+      const data = await listAdmin();
+      if (!data.total) {
+        tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">Belum ada admin terdaftar.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.data.map((a, i) => `
+        <tr>
+          <td>${i+1}</td>
+          <td><strong>${a.nama}</strong></td>
+          <td><code>${a.username}</code></td>
+          <td>${a.aktif
+            ? '<span class="badge badge-green">✅ Aktif</span>'
+            : '<span class="badge badge-red">❌ Nonaktif</span>'}</td>
+          <td>${formatDateTime(a.terdaftar)}</td>
+          <td style="text-align:center;">
+            <div style="display:flex;gap:0.35rem;justify-content:center;">
+              <button class="btn btn-warning btn-sm"
+                data-edit-admin='${JSON.stringify({id:a.id,nama:a.nama,username:a.username,aktif:a.aktif})}'>
+                ✏️ Edit
+              </button>
+              <button class="btn btn-danger btn-sm" data-hapus-admin-id="${a.id}" data-hapus-admin-nama="${escStr(a.nama)}">
+                🗑️ Hapus
+              </button>
+            </div>
+          </td>
+        </tr>`).join('');
+    } catch(err) {
+      showToast('Gagal memuat daftar admin: ' + err.message, 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // PENDING AKTIVASI
+  // ═══════════════════════════════════════════════════════════
+  async function loadPending() {
+    const tbody = document.getElementById('tabel-pending');
+    tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty"><span class="spinner dark"></span></td></tr>`;
+    try {
+      const data = await pendingAktivasi();
+      if (!data.total_pending) {
+        tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">✅ Tidak ada yang menunggu aktivasi.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.data.map(u => `
+        <tr>
+          <td>${u.id}</td>
+          <td><strong>${u.nama}</strong></td>
+          <td><code>${u.username}</code></td>
+          <td><span class="badge badge-amber">${u.role}</span></td>
+          <td>${formatDateTime(u.terdaftar)}</td>
+          <td><button class="btn btn-success btn-sm" data-aktivasi-id="${u.id}" data-aktivasi-nama="${escStr(u.nama)}">✅ Aktifkan</button></td>
+        </tr>`).join('');
+    } catch(err) {
+      showToast('Gagal memuat data pending: ' + err.message, 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // EVENT DELEGATION — tombol di dalam tabel (render dinamis)
+  // ═══════════════════════════════════════════════════════════
+  document.addEventListener('click', async e => {
+
+    // ── Aktivasi user ────────────────────────────────────────
+    const aktivasiBtn = e.target.closest('[data-aktivasi-id]');
+    if (aktivasiBtn) {
+      const userId = aktivasiBtn.dataset.aktivasiId;
+      const nama   = aktivasiBtn.dataset.aktivasiNama;
+      if (!confirm(`Aktifkan akun "${nama}"?`)) return;
       try {
         const res = await aktivasiUser(userId);
-        showToast(res.msg, "success");
-        loadPending();
-        loadDashboard();
-      } catch (err) {
-        showToast("Gagal aktivasi: " + err.message, "error");
-      }
-    };
+        showToast(res.msg, 'success');
+        loadPending(); loadDashboard();
+      } catch(err) { showToast('Gagal aktivasi: ' + err.message, 'error'); }
+      return;
+    }
 
-    // ─── Tambah Dokter ─────────────────────────────────────────
-    window.doTambahDokter = async function() {
-      const alertBox   = document.getElementById("alert-dokter");
-      const successBox = document.getElementById("success-dokter");
-      const btn        = document.getElementById("btn-tambah-dokter");
+    // ── Edit dokter ──────────────────────────────────────────
+    const editDokterBtn = e.target.closest('[data-edit-dokter]');
+    if (editDokterBtn) {
+      const d = JSON.parse(editDokterBtn.dataset.editDokter);
+      document.getElementById('edit-dokter-id').value      = d.id;
+      document.getElementById('edit-d-nama').value         = d.nama;
+      document.getElementById('edit-d-username').value     = d.username;
+      document.getElementById('edit-d-spesialisasi').value = d.spesialisasi;
+      document.getElementById('edit-d-no-str').value       = d.no_str;
+      document.getElementById('edit-d-password').value     = '';
+      document.getElementById('edit-d-aktif').value        = d.aktif ? 'true' : 'false';
+      hideAlert('alert-edit-dokter');
+      openModal('modal-edit-dokter');
+      return;
+    }
 
-      const payload = {
-        nama_lengkap:  document.getElementById("d-nama").value.trim(),
-        username:      document.getElementById("d-username").value.trim(),
-        password:      document.getElementById("d-password").value,
-        spesialisasi:  document.getElementById("d-spesialisasi").value.trim(),
-        no_str:        document.getElementById("d-no-str").value.trim()
-      };
-
-      const missing = Object.entries(payload).filter(([k,v]) => !v).map(([k]) => k);
-      if (missing.length) {
-        alertBox.className = "alert alert-error";
-        alertBox.innerHTML = `⚠️ Field berikut wajib diisi: ${missing.join(", ")}`;
-        alertBox.classList.remove("d-none");
-        return;
-      }
-      if (payload.password.length < 6) {
-        alertBox.className = "alert alert-error";
-        alertBox.innerHTML = "⚠️ Password minimal 6 karakter.";
-        alertBox.classList.remove("d-none");
-        return;
-      }
-
-      alertBox.classList.add("d-none");
-      successBox.classList.add("d-none");
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
-
+    // ── Hapus dokter ─────────────────────────────────────────
+    const hapusDokterBtn = e.target.closest('[data-hapus-dokter-id]');
+    if (hapusDokterBtn) {
+      const id   = hapusDokterBtn.dataset.hapusDocterId || hapusDokterBtn.dataset.hapusDocterId;
+      const idVal = hapusDokterBtn.getAttribute('data-hapus-dokter-id');
+      const nama = hapusDokterBtn.getAttribute('data-hapus-dokter-nama');
+      if (!confirm(`Hapus akun dokter "${nama}"?\n\nJika punya rekam medis, akun akan dinonaktifkan saja.`)) return;
       try {
-        const res = await createDokter(payload);
-        successBox.className = "alert alert-success";
-        successBox.innerHTML = `✅ Akun dokter <strong>${payload.nama_lengkap}</strong> berhasil dibuat dan langsung aktif.`;
-        successBox.classList.remove("d-none");
+        const res = await hapusDokter(idVal);
+        showToast(res.msg, res.aksi === 'hapus' ? 'success' : 'info');
+        loadDokter(); loadDashboard();
+      } catch(err) { showToast('Gagal: ' + err.message, 'error'); }
+      return;
+    }
 
-        ["d-nama","d-username","d-password","d-spesialisasi","d-no-str"].forEach(id => {
-          document.getElementById(id).value = "";
-        });
+    // ── Edit admin ───────────────────────────────────────────
+    const editAdminBtn = e.target.closest('[data-edit-admin]');
+    if (editAdminBtn) {
+      const a = JSON.parse(editAdminBtn.dataset.editAdmin);
+      document.getElementById('edit-admin-id').value       = a.id;
+      document.getElementById('edit-admin-nama').value     = a.nama;
+      document.getElementById('edit-admin-username').value = a.username;
+      document.getElementById('edit-admin-password').value = '';
+      document.getElementById('edit-admin-aktif').value    = a.aktif ? 'true' : 'false';
+      hideAlert('alert-edit-admin');
+      openModal('modal-edit-admin');
+      return;
+    }
 
-        showToast("Dokter berhasil ditambahkan!", "success");
-      } catch (err) {
-        alertBox.className = "alert alert-error";
-        alertBox.innerHTML = `❌ ${err.message}`;
-        alertBox.classList.remove("d-none");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = "Simpan Akun Dokter";
-      }
+    // ── Hapus admin ──────────────────────────────────────────
+    const hapusAdminBtn = e.target.closest('[data-hapus-admin-id]');
+    if (hapusAdminBtn) {
+      const idVal = hapusAdminBtn.getAttribute('data-hapus-admin-id');
+      const nama  = hapusAdminBtn.getAttribute('data-hapus-admin-nama');
+      if (!confirm(`Hapus akun admin "${nama}"?\n\nAksi ini permanen.`)) return;
+      try {
+        const res = await hapusAdmin(idVal);
+        showToast(res.msg, 'success');
+        loadAdmin(); loadDashboard();
+      } catch(err) { showToast('Gagal: ' + err.message, 'error'); }
+      return;
+    }
+  });
+
+  // ── Tambah Dokter ─────────────────────────────────────────────────────────────
+  document.getElementById('btn-tambah-dokter').addEventListener('click', async () => {
+    const alertBox   = document.getElementById('alert-dokter');
+    const successBox = document.getElementById('success-dokter');
+    const btn        = document.getElementById('btn-tambah-dokter');
+
+    const payload = {
+      nama_lengkap: document.getElementById('d-nama').value.trim(),
+      username:     document.getElementById('d-username').value.trim(),
+      password:     document.getElementById('d-password').value,
+      spesialisasi: document.getElementById('d-spesialisasi').value.trim(),
+      no_str:       document.getElementById('d-no-str').value.trim(),
     };
 
-    // ─── Logout ────────────────────────────────────────────────
-    window.doLogout = function() {
-      if (confirm("Yakin ingin keluar?")) logout();
-    };
+    const missing = Object.entries(payload).filter(([,v]) => !v).map(([k]) => k);
+    if (missing.length) {
+      showAlert('alert-dokter', 'error', `⚠️ Field wajib belum diisi: ${missing.join(', ')}`);
+      successBox.classList.add('d-none');
+      return;
+    }
+    if (payload.password.length < 6) {
+      showAlert('alert-dokter', 'error', '⚠️ Password minimal 6 karakter.');
+      return;
+    }
 
-    // ─── Init ──────────────────────────────────────────────────
-    loadDashboard();
-  </script>
+    alertBox.classList.add('d-none');
+    successBox.classList.add('d-none');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Menyimpan...`;
+
+    try {
+      const res = await createDokter(payload);
+      successBox.className = 'alert alert-success';
+      successBox.innerHTML = `✅ Akun dokter <strong>${payload.nama_lengkap}</strong> berhasil dibuat.`;
+      successBox.classList.remove('d-none');
+      ['d-nama','d-username','d-password','d-spesialisasi','d-no-str'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      showToast('Dokter berhasil ditambahkan!', 'success');
+    } catch(err) {
+      showAlert('alert-dokter', 'error', `❌ ${err.message}`);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan Akun Dokter`;
+    }
+  });
+
+  // ── Simpan Edit Dokter ────────────────────────────────────────────────────────
+  document.getElementById('btn-simpan-edit-dokter').addEventListener('click', async () => {
+    const id      = document.getElementById('edit-dokter-id').value;
+    const btn     = document.getElementById('btn-simpan-edit-dokter');
+    const payload = {
+      nama_lengkap: document.getElementById('edit-d-nama').value.trim(),
+      username:     document.getElementById('edit-d-username').value.trim(),
+      spesialisasi: document.getElementById('edit-d-spesialisasi').value.trim(),
+      no_str:       document.getElementById('edit-d-no-str').value.trim(),
+      is_active:    document.getElementById('edit-d-aktif').value === 'true',
+    };
+    const pw = document.getElementById('edit-d-password').value;
+    if (pw) payload.password = pw;
+
+    if (!payload.nama_lengkap || !payload.username) {
+      showAlert('alert-edit-dokter', 'error', '⚠️ Nama dan username wajib diisi.');
+      return;
+    }
+    btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Menyimpan...`;
+    try {
+      const res = await editDokter(id, payload);
+      showToast(res.msg, 'success');
+      closeModal('modal-edit-dokter');
+      loadDokter();
+    } catch(err) {
+      showAlert('alert-edit-dokter', 'error', `❌ ${err.message}`);
+    } finally {
+      btn.disabled = false; btn.innerHTML = 'Simpan Perubahan';
+    }
+  });
+
+  // ── Buka Modal Tambah Admin ───────────────────────────────────────────────────
+  document.getElementById('btn-buka-tambah-admin').addEventListener('click', () => {
+    document.getElementById('new-admin-nama').value     = '';
+    document.getElementById('new-admin-username').value = '';
+    document.getElementById('new-admin-password').value = '';
+    hideAlert('alert-tambah-admin');
+    openModal('modal-tambah-admin');
+  });
+
+  // ── Simpan Tambah Admin ───────────────────────────────────────────────────────
+  document.getElementById('btn-simpan-tambah-admin').addEventListener('click', async () => {
+    const btn     = document.getElementById('btn-simpan-tambah-admin');
+    const payload = {
+      nama_lengkap: document.getElementById('new-admin-nama').value.trim(),
+      username:     document.getElementById('new-admin-username').value.trim(),
+      password:     document.getElementById('new-admin-password').value,
+    };
+    if (!payload.nama_lengkap || !payload.username || !payload.password) {
+      showAlert('alert-tambah-admin', 'error', '⚠️ Semua field wajib diisi.'); return;
+    }
+    if (payload.password.length < 6) {
+      showAlert('alert-tambah-admin', 'error', '⚠️ Password minimal 6 karakter.'); return;
+    }
+    btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Menyimpan...`;
+    try {
+      const res = await createAdmin(payload);
+      showToast(res.msg, 'success');
+      closeModal('modal-tambah-admin');
+      loadAdmin(); loadDashboard();
+    } catch(err) {
+      showAlert('alert-tambah-admin', 'error', `❌ ${err.message}`);
+    } finally {
+      btn.disabled = false; btn.innerHTML = 'Buat Admin';
+    }
+  });
+
+  // ── Simpan Edit Admin ─────────────────────────────────────────────────────────
+  document.getElementById('btn-simpan-edit-admin').addEventListener('click', async () => {
+    const id      = document.getElementById('edit-admin-id').value;
+    const btn     = document.getElementById('btn-simpan-edit-admin');
+    const payload = {
+      nama_lengkap: document.getElementById('edit-admin-nama').value.trim(),
+      username:     document.getElementById('edit-admin-username').value.trim(),
+      is_active:    document.getElementById('edit-admin-aktif').value === 'true',
+    };
+    const pw = document.getElementById('edit-admin-password').value;
+    if (pw) payload.password = pw;
+
+    if (!payload.nama_lengkap || !payload.username) {
+      showAlert('alert-edit-admin', 'error', '⚠️ Nama dan username wajib diisi.'); return;
+    }
+    btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Menyimpan...`;
+    try {
+      const res = await editAdmin(id, payload);
+      showToast(res.msg, 'success');
+      closeModal('modal-edit-admin');
+      loadAdmin(); loadDashboard();
+    } catch(err) {
+      showAlert('alert-edit-admin', 'error', `❌ ${err.message}`);
+    } finally {
+      btn.disabled = false; btn.innerHTML = 'Simpan Perubahan';
+    }
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  loadDashboard();
+</script>
+
 </body>
 </html>

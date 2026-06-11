@@ -166,6 +166,8 @@ def get_rekam_medis(
         "pasien":            rm.pasien.nama_pasien if rm.pasien else None,
         "no_rekam_medis":    rm.pasien.no_rekam_medis if rm.pasien else None,
         "dokter":            rm.dokter.nama_lengkap if rm.dokter else None,
+        "tanggal_lahir":     str(rm.pasien.tanggal_lahir) if rm.pasien and rm.pasien.tanggal_lahir else None,  # ← TAMBAH
+        "alamat":            rm.pasien.alamat if rm.pasien else None,  
         "waktu_pemeriksaan": str(rm.waktu_pemeriksaan),
         "status":            rm.status_record,
         "data_medis": {

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cetak Semua Rekam Medis — SmartERM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      background: #c8c8c8;
+      color: #111;
+      font-size: 12px;
+      line-height: 1.45;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .print-bar {
+      background: #1a3a5c;
+      padding: 0.65rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .print-bar-left { display: flex; flex-direction: column; gap: 0.2rem; }
+    .print-bar p     { color: rgba(255,255,255,0.85); font-size: 0.84rem; font-family: Arial,sans-serif; }
+    .print-bar small { color: rgba(255,255,255,0.55); font-size: 0.74rem; font-family: Arial,sans-serif; }
+    .print-bar .btns { display: flex; gap: 0.55rem; }
+    .print-bar button {
+      padding: 0.42rem 1rem; border-radius: 6px;
+      font-family: Arial,sans-serif; font-size: 0.8rem;
+      font-weight: 700; cursor: pointer; border: none;
+    }
+    .btn-print          { background: #22c55e; color: white; }
+    .btn-print:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-back           { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3) !important; }
+    #pages-container { padding: 1.2rem 0 2.5rem; }
+    .page {
+      width: 740px;
+      min-height: 1050px;
+      margin: 0 auto 2rem;
+      background: white;
+      padding: 20px 34px 24px;
+      box-shadow: 0 4px 22px rgba(0,0,0,0.28);
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; margin-bottom: 0; }
+    .kop {
+      display: grid;
+      grid-template-columns: 70px 1fr 70px;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 5px;
+      border-bottom: 3px solid #000;
+    }
+    .kop-logo { width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; }
+    .kop-logo img { width: 100%; height: 100%; object-fit: contain; }
+    .kop-logo .placeholder {
+      width: 64px; height: 64px; border-radius: 50%; border: 2px solid #000;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 7.5px; text-align: center; line-height: 1.3; font-weight: bold;
+    }
+    .kop-center { text-align: center; line-height: 1.3; }
+    .kop-center .rs-top  { font-size: 11.5px; }
+    .kop-center .rs-bold { font-size: 15.5px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+    .kop-center .rs-addr { font-size: 10.5px; margin-top: 2px; }
+    .kop-center .rs-city { font-size: 13px; font-weight: 900; text-transform: uppercase; margin-top: 1px; }
+    .data-rahasia { text-align: right; font-size: 11px; font-style: italic; margin: 3px 0 5px; }
+    .doc-title {
+      text-align: center; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
+    }
+    .section { margin-bottom: 7px; }
+    .section-title { font-size: 11.5px; font-weight: 700; text-transform: uppercase; margin-bottom: 3px; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 11.5px; table-layout: fixed; }
+    .data-table td { border: 1px solid #000; padding: 3px 8px; vertical-align: middle; }
+    .data-table td.lbl { width: 200px; }
+    .data-table tr.tall td { height: 30px; vertical-align: top; padding-top: 4px; }
+    .surat-footer { margin-top: 14px; display: flex; justify-content: flex-end; }
+    .ttd-area  { text-align: center; min-width: 200px; }
+    .ttd-place { font-size: 11.5px; }
+    .ttd-role  { font-size: 11.5px; margin-bottom: 36px; }
+    .ttd-line  { border-top: 1px solid #000; width: 170px; margin: 0 auto 3px; }
+    .ttd-name  { font-size: 11.5px; font-weight: 700; }
+    .footer-note {
+      margin-top: 10px; text-align: center; font-size: 9.5px; color: #555;
+      border-top: 1px solid #bbb; padding-top: 5px;
+    }
+    .state-box {
+      width: 740px; margin: 2rem auto; background: white; border-radius: 8px;
+      padding: 3rem; text-align: center; color: #555;
+      font-family: Arial,sans-serif; font-size: 0.9rem;
+      box-shadow: 0 4px 22px rgba(0,0,0,0.15);
+    }
+    .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .spin {
+      width: 32px; height: 32px;
+      border: 3px solid #e5e7eb; border-top-color: #1a3a5c;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media print {
+      body { background: white; }
+      .print-bar { display: none !important; }
+      .page { margin: 0; padding: 18px 26px 22px; box-shadow: none; width: 100%; min-height: auto; }
+      #pages-container { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="print-bar" id="print-bar">
+    <div class="print-bar-left">
+      <p id="doc-status">Memuat rekam medis...</p>
+      <small id="doc-count"></small>
+    </div>
+    <div class="btns">
+      <button class="btn-back" onclick="history.back()">← Kembali</button>
+      <button class="btn-print" onclick="window.print()" id="btn-print" disabled>🖨️ Cetak / Unduh PDF</button>
+    </div>
+  </div>
+
+  <div id="pages-container">
+    <div class="state-box">
+      <div class="spinner-wrap">
+        <div class="spin"></div>
+        <span>Memuat semua rekam medis...</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getRekamMedis } from "../js/api.js";
+
+    if (!localStorage.getItem("access_token")) {
+      window.location.href = "../index.html";
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const idsRaw = params.get("ids");
+    const container = document.getElementById("pages-container");
+
+    if (!idsRaw) {
+      container.innerHTML = `<div class="state-box">❌ Parameter <code>ids</code> tidak ditemukan di URL.</div>`;
+    } else {
+      const ids = idsRaw.split(",").map(s => s.trim()).filter(Boolean);
+      loadAll(ids);
+    }
+
+    async function loadAll(ids) {
+      let results;
+      try {
+        results = await Promise.all(ids.map(id => getRekamMedis(id)));
+      } catch(err) {
+        container.innerHTML = `<div class="state-box">❌ Gagal memuat: ${err.message}</div>`;
+        return;
+      }
+
+      // Urutkan kronologis: terlama → terbaru
+      results.sort((a, b) =>
+        new Date(a.waktu_pemeriksaan) - new Date(b.waktu_pemeriksaan)
+      );
+
+      container.innerHTML = results.map(data => buildPage(data)).join("");
+
+      const namaPasien = results[0]?.pasien || "-";
+      document.getElementById("doc-status").textContent =
+        `Rekam Medis — ${namaPasien}`;
+      document.getElementById("doc-count").textContent =
+        `${results.length} dokumen  •  diurutkan terlama ke terbaru`;
+      document.getElementById("btn-print").disabled = false;
+    }
+
+    function row(label, value, tall = false) {
+      const cls = tall ? ' class="tall"' : '';
+      return `<tr${cls}><td class="lbl">${label}</td><td class="val">${value || ''}</td></tr>`;
+    }
+
+    function buildPage(data) {
+      const dm       = data.data_medis || {};
+      const noRm     = data.no_rekam_medis || "-";
+      const pasien   = data.pasien         || "-";
+      const dokter   = data.dokter         || "-";
+      const tglLahir = data.tanggal_lahir  ? fmtDate(data.tanggal_lahir) : "-";
+      const alamat   = data.alamat         || "-";
+      const tglDt    = fmtDateTime(data.waktu_pemeriksaan);
+      const tglTTD   = fmtDate(data.waktu_pemeriksaan);
+
+      return `
+      <div class="page">
+        <div class="kop">
+          <div class="kop-logo">
+            <img src="logoalhasanah.png" alt="Logo RSIA"
+              onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'placeholder',textContent:'RSIA AL HASANAH'}))">
+          </div>
+          <div class="kop-center">
+            <div class="rs-top">RUMAH SAKIT IBU DAN ANAK</div>
+            <div class="rs-bold">AL-HASANAH</div>
+            <div class="rs-addr">Jalan Sri Rejeki No.91 B Telp (0351) 463173, 7705075 Fax (0351) 467733</div>
+            <div class="rs-city">KOTA MADIUN</div>
+          </div>
+          <div class="kop-logo">
+            <img src="logo yayasan hijau.png" alt="Logo Yayasan"
+              onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'placeholder',textContent:'YAYASAN AL HASANAH MADIUN'}))">
+          </div>
+        </div>
+
+        <div class="data-rahasia">Data Rahasia</div>
+        <div class="doc-title">PENGKAJIAN MEDIS RAWAT JALAN PASIEN GINEKOLOGI</div>
+
+        <div class="section">
+          <div class="section-title">I. DATA PASIEN</div>
+          <table class="data-table">
+            ${row('Nama Pasien',       pasien)}
+            ${row('Tgl. Lahir',        tglLahir)}
+            ${row('Alamat',            alamat)}
+            ${row('No. Rekam Medis',   noRm)}
+            ${row('Dokter Pemeriksa',  dokter)}
+            ${row('Waktu Pemeriksaan', tglDt)}
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">II. TANDA-TANDA VITAL</div>
+          <table class="data-table">
+            ${row('Tekanan Darah', dm.tekanan_darah)}
+            ${row('Nadi',          dm.nadi)}
+            ${row('Suhu',          dm.suhu)}
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">III. ANAMNESIS</div>
+          <table class="data-table">
+            ${row('Keluhan Utama',             dm.keluhan_utama,             true)}
+            ${row('Riwayat Penyakit Sekarang', dm.riwayat_penyakit_sekarang, true)}
+            ${row('Riwayat Penyakit Keluarga', dm.riwayat_penyakit_keluarga, true)}
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">IV. DATA KEBIDANAN</div>
+          <table class="data-table">
+            ${row('HPHT', dm.hpht ? fmtDate(dm.hpht) : '')}
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">V. PEMERIKSAAN FISIK</div>
+          <table class="data-table">
+            ${row('Pemeriksaan Fisik', dm.pemeriksaan_fisik_lengkap, true)}
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">VI. DIAGNOSIS &amp; TATALAKSANA</div>
+          <table class="data-table">
+            ${row('Diagnosa Utama',  dm.diagnosa_utama,  true)}
+            ${row('Rencana Layanan', dm.rencana_layanan, true)}
+            ${row('Resep Obat',      dm.resep_obat,      true)}
+            ${row('Edukasi Pasien',  dm.edukasi_pasien,  true)}
+          </table>
+        </div>
+
+        <div class="surat-footer">
+          <div class="ttd-area">
+            <div class="ttd-place">Madiun, ${tglTTD}</div>
+            <div class="ttd-role">Dokter Pemeriksa</div>
+            <div class="ttd-line"></div>
+            <div class="ttd-name">(${dokter})</div>
+          </div>
+        </div>
+
+        <div class="footer-note">
+          Dokumen ini bersifat rahasia memuat data kondisi medis pasien RSIA AL-Hasanah.<br>
+          Dicetak dan cetak oleh SmartERM
+        </div>
+      </div>`;
+    }
+
+    function fmtDate(d) {
+      if (!d) return "";
+      try {
+        return new Date(d).toLocaleDateString("id-ID", {
+          day: "numeric", month: "long", year: "numeric"
+        });
+      } catch { return d; }
+    }
+
+    function fmtDateTime(d) {
+      if (!d) return "-";
+      try {
+        return new Date(d).toLocaleString("id-ID", {
+          day: "numeric", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit"
+        });
+      } catch { return d; }
+    }
+  </script>
+
+</body>
+</html>

@@ -9,7 +9,7 @@ from database import Base
 # -----------------------------------------------------------------------------
 # Tabel: users
 # -----------------------------------------------------------------------------
-
+    
 class User(Base):
     """Akun pengguna sistem — bisa berperan sebagai admin atau dokter."""
 

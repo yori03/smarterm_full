@@ -4,529 +4,315 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Daftar Admin — SmartERM</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --purple:       #6c63e8;
-      --purple-deep:  #4a3fc0;
-      --purple-mid:   #8f8af0;
-      --purple-pale:  #b8b5f5;
-      --purple-bg:    #f0efff;
-      --purple-border:#ddd8ff;
-
-      --gray-50:  #f7f8ff;
-      --gray-100: #eef0fb;
-      --gray-200: #dde1f5;
-      --gray-400: #9299c0;
-      --gray-500: #636b9e;
-      --gray-700: #363d6e;
-      --gray-900: #111443;
-
-      --red-500:   #ef4444;
-      --red-50:    #fef2f2;
-      --green-500: #22c55e;
-      --green-50:  #f0fdf4;
-      --white:     #ffffff;
-
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 18px;
-      --radius-xl: 24px;
-
-      --shadow-card:  0 24px 64px rgba(74,63,192,.14), 0 4px 16px rgba(74,63,192,.08);
-      --shadow-input: 0 0 0 3.5px rgba(108,99,232,.14);
-      --transition: .2s cubic-bezier(.4,0,.2,1);
-      --font: 'DM Sans', sans-serif;
+      --blue: #3b5bdb; --blue-dark: #2f4ac0;
+      --text: #111827; --muted: #6b7280;
+      --border: #e5e7eb; --danger: #dc2626;
     }
-
-    html, body { height: 100%; }
     body {
-      font-family: var(--font);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       min-height: 100vh;
-      background: var(--white);
-      color: var(--gray-900);
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ══ LEFT PANEL ══ */
-    .left {
-      position: relative;
-      background: linear-gradient(148deg, #9d9af5 0%, #7b78f2 28%, #6c63e8 60%, #a0a8f8 100%);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .left::before {
-      content: '';
-      position: absolute; inset: 0;
-      background-image: radial-gradient(circle, rgba(255,255,255,.2) 1px, transparent 1px);
-      background-size: 26px 26px;
-      pointer-events: none; z-index: 0;
-    }
-    .blob { position: absolute; border-radius: 50%; pointer-events: none; z-index: 0; }
-    .blob-1 { width: 440px; height: 440px; background: rgba(255,255,255,.10); top: -130px; right: -110px; }
-    .blob-2 { width: 260px; height: 260px; background: rgba(255,255,255,.07); bottom: 48px; left: -70px; }
-    .blob-3 { width: 140px; height: 140px; background: rgba(255,255,255,.08); bottom: 220px; right: 60px; }
-
-    /* logo topbar */
-    .left-topbar {
-      position: relative; z-index: 2;
-      display: flex; align-items: center; gap: 10px;
-      padding: 28px 32px;
-    }
-    .logo-icon {
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,.18);
-      border: 1px solid rgba(255,255,255,.3);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; flex-shrink: 0;
-    }
-    .logo-words { display: flex; flex-direction: column; line-height: 1.15; }
-    .logo-words .rsia { font-size: 9px; font-weight: 700; letter-spacing: .12em; color: rgba(255,255,255,.6); text-transform: uppercase; }
-    .logo-words .name { font-size: 13px; font-weight: 800; color: #fff; }
-    .logo-words .city { font-size: 9px; font-weight: 500; letter-spacing: .1em; color: rgba(255,255,255,.55); text-transform: uppercase; }
-
-    /* hero body */
-    .left-body {
-      position: relative; z-index: 2;
-      flex: 1;
-      display: flex; flex-direction: column; justify-content: center;
-      padding: 0 52px 40px;
-    }
-    .chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,.15);
-      border: 1px solid rgba(255,255,255,.25);
-      border-radius: 999px;
-      padding: 5px 14px;
-      font-size: 12px; font-weight: 600;
-      color: rgba(255,255,255,.9); letter-spacing: .02em;
-      margin-bottom: 24px; width: fit-content;
-    }
-    .hero-title { font-size: 2.6rem; font-weight: 800; color: var(--white); line-height: 1.12; margin-bottom: 16px; }
-    .hero-title .accent { color: rgba(255,255,255,.55); }
-    .hero-desc { font-size: .95rem; color: rgba(255,255,255,.72); line-height: 1.65; max-width: 340px; margin-bottom: 32px; }
-
-    /* activation flow steps */
-    .flow-box {
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: var(--radius-lg);
-      padding: 20px 22px;
-    }
-    .flow-box .flow-title {
-      font-size: 12px; font-weight: 700;
-      color: rgba(255,255,255,.9);
-      margin-bottom: 14px;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .flow-steps { display: flex; flex-direction: column; gap: 10px; }
-    .flow-step {
-      display: flex; align-items: flex-start; gap: 12px;
-    }
-    .flow-num {
-      width: 22px; height: 22px; flex-shrink: 0;
-      background: rgba(255,255,255,.2);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 800;
-      color: white;
-    }
-    .flow-text { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.5; padding-top: 2px; }
-
-    /* bottom strip */
-    .left-footer {
-      position: relative; z-index: 2;
-      padding: 18px 32px;
-      border-top: 1px solid rgba(255,255,255,.12);
-      display: flex; align-items: center; gap: 10px;
-    }
-    .lf-icon { font-size: .9rem; color: rgba(255,255,255,.45); }
-    .lf-text .lf-title { font-size: .78rem; font-weight: 700; color: rgba(255,255,255,.8); }
-    .lf-text .lf-sub   { font-size: .72rem; color: rgba(255,255,255,.42); }
-
-    /* ══ RIGHT PANEL ══ */
-    .right {
-      background: var(--gray-50);
+      background: linear-gradient(145deg, #b8c0f0 0%, #a5b4fc 20%, #8fa4f3 45%, #c7d0f8 75%, #dde3fb 100%);
       display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem 1rem 5rem; position: relative; overflow-x: hidden;
     }
-
-    .right-topbar {
-      display: flex; justify-content: flex-end;
-      padding: 22px 32px;
+    body::before {
+      content: ""; position: absolute;
+      width: 420px; height: 420px; border-radius: 50%;
+      background: rgba(255,255,255,.18); top: -120px; right: -120px; pointer-events: none;
     }
-    .sys-badge {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 12px; font-weight: 600; color: var(--gray-500);
+    body::after {
+      content: ""; position: absolute;
+      width: 280px; height: 280px; border-radius: 50%;
+      background: rgba(255,255,255,.12); bottom: 80px; left: -80px; pointer-events: none;
     }
-    .sys-badge::before { content: '🔒'; font-size: 11px; }
-
-    .right-center {
-      flex: 1;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0 32px 24px;
+    .card {
+      width: 100%; max-width: 460px; background: #fff;
+      border-radius: 20px; padding: 2.6rem 2.6rem 2.4rem;
+      box-shadow: 0 20px 60px rgba(59,91,219,.18), 0 4px 16px rgba(0,0,0,.06);
+      position: relative; z-index: 1;
     }
-
-    /* floating card */
-    .auth-card {
-      background: var(--white);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-card);
-      border: 1px solid rgba(108,99,232,.07);
-      padding: 32px 36px 36px;
-      width: 100%; max-width: 420px;
-    }
-
     .back-link {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: .82rem; font-weight: 500;
-      color: var(--gray-500); text-decoration: none;
-      margin-bottom: 18px;
-      transition: color var(--transition);
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .83rem; font-weight: 600; color: var(--muted);
+      text-decoration: none; margin-bottom: 1.5rem; transition: color .18s;
     }
-    .back-link:hover { color: var(--purple); text-decoration: none; }
-
-    .card-heading { font-size: 1.55rem; font-weight: 800; color: var(--gray-900); line-height: 1.2; margin-bottom: 5px; }
-    .card-sub { font-size: .85rem; color: var(--gray-500); margin-bottom: 22px; line-height: 1.5; }
-
-    /* alerts */
-    #alert-box, #success-box {
-      padding: 11px 14px;
-      border-radius: var(--radius-sm);
-      font-size: .84rem; margin-bottom: 16px;
-      border: 1px solid transparent;
-      line-height: 1.5;
+    .back-link:hover { color: var(--blue); }
+    .back-link svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em; color: var(--text); margin-bottom: .35rem; }
+    .subtitle { font-size: .855rem; color: var(--muted); font-weight: 500; line-height: 1.6; margin-bottom: 1.6rem; }
+    .note {
+      background: #f0f4ff; border: 1px solid #c7d4f8; border-radius: 12px;
+      padding: .8rem 1rem; margin-bottom: 1.5rem;
+      font-size: .79rem; font-weight: 600; color: #2d4ab0; line-height: 1.65;
     }
-    .alert-error   { background: var(--red-50);   color: #991b1b; border-color: #fecaca !important; }
-    .alert-success { background: var(--green-50); color: #166534; border-color: #bbf7d0 !important; }
+    .alert {
+      padding: .78rem 1rem; border-radius: 12px; margin-bottom: 1rem;
+      font-size: .83rem; font-weight: 600; line-height: 1.5; border: 1px solid transparent;
+    }
+    .alert-error   { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+    .alert-success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
     .d-none { display: none !important; }
-
-    /* form */
-    .form-group { margin-bottom: 14px; }
-    .form-label { display: block; font-size: .8rem; font-weight: 700; color: var(--gray-700); margin-bottom: 6px; }
-    .required { color: var(--red-500); margin-left: 2px; }
-
-    .inp-wrap { position: relative; }
-    .inp-ico {
-      position: absolute; left: 13px; top: 50%;
-      transform: translateY(-50%);
-      font-size: .85rem; color: var(--purple-pale);
+    .form-group { margin-bottom: .95rem; }
+    .form-label { display: block; font-size: .82rem; font-weight: 700; color: var(--text); margin-bottom: .42rem; }
+    .req { color: var(--danger); margin-left: 1px; }
+    .inp { position: relative; }
+    .inp-ico { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); display: flex; pointer-events: none; }
+    .inp-ico svg { width: 15px; height: 15px; stroke: #9ca3af; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    input[type=text], input[type=password] {
+      width: 100%; padding: .82rem 1rem .82rem 2.55rem;
+      border: 1.5px solid var(--border); border-radius: 12px;
+      font-family: inherit; font-size: .9rem; color: var(--text); background: #fff;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3.5px rgba(59,91,219,.10); }
+    input::placeholder { color: #c9d0dc; }
+    .has-toggle { padding-right: 2.8rem !important; }
+    .toggle-pw {
+      position: absolute; right: .85rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; padding: 0; display: flex;
+    }
+    .toggle-pw svg { width: 16px; height: 16px; stroke: #9ca3af; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke .18s; }
+    .toggle-pw:hover svg { stroke: #374151; }
+    .hint { font-size: .73rem; color: var(--muted); margin-top: .25rem; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .divider { height: 1px; background: var(--border); margin: 1.3rem 0; }
+    .btn {
+      width: 100%; padding: .88rem 1.25rem; border: none; border-radius: 12px;
+      background: var(--blue); color: #fff;
+      font-family: inherit; font-size: .92rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      box-shadow: 0 4px 16px rgba(59,91,219,.32); margin-bottom: 1rem;
+      transition: background .2s, box-shadow .2s, transform .15s;
+    }
+    .btn svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .btn:hover:not(:disabled) { background: var(--blue-dark); box-shadow: 0 6px 22px rgba(59,91,219,.38); transform: translateY(-1px); }
+    .btn:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+    .login-note { text-align: center; font-size: .82rem; color: var(--muted); }
+    .login-note a { color: var(--blue); font-weight: 600; text-decoration: none; }
+    .login-note a:hover { text-decoration: underline; }
+    .spinner { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Toast */
+    .toast {
+      position: fixed; top: 1.5rem; right: 1.75rem;
+      display: flex; align-items: center; gap: .8rem;
+      background: #fff; border-radius: 14px; padding: .9rem 1.15rem;
+      box-shadow: 0 12px 40px rgba(0,0,0,.13); border: 1px solid #f0f0f5;
+      z-index: 9999; min-width: 280px; max-width: 360px;
+      transform: translateX(calc(100% + 2rem)); opacity: 0;
+      transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s ease;
       pointer-events: none;
     }
-    .form-control {
-      width: 100%;
-      padding: 10px 14px 10px 38px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-md);
-      font-family: var(--font);
-      font-size: .88rem; color: var(--gray-900);
-      background: var(--gray-50);
-      outline: none;
-      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    .toast.show { transform: translateX(0); opacity: 1; pointer-events: auto; }
+    .t-icon { width: 34px; height: 34px; border-radius: 10px; background: #f0fdf4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .t-icon svg { width: 17px; height: 17px; stroke: #16a34a; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .t-title { font-size: .85rem; font-weight: 800; color: #111827; margin-bottom: .1rem; }
+    .t-desc  { font-size: .76rem; color: #6b7280; font-weight: 500; }
+    .t-bar { position: absolute; bottom: 0; left: 0; height: 3px; border-radius: 0 0 14px 14px; background: linear-gradient(90deg, var(--blue), var(--blue-dark)); width: 100%; transform-origin: left; animation: shrink 3s linear forwards; }
+    @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+    /* Footer */
+    .footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: .8rem 2rem; display: flex; align-items: center; justify-content: center; gap: 1.2rem;
+      background: rgba(255,255,255,.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,.3); z-index: 10;
     }
-    .form-control:focus {
-      border-color: var(--purple);
-      background: var(--white);
-      box-shadow: var(--shadow-input);
-    }
-    .form-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
-
-    /* password toggle */
-    .pw-wrap { position: relative; }
-    .pw-wrap .form-control { padding-right: 40px; }
-    .pw-toggle {
-      position: absolute; right: 12px; top: 50%;
-      transform: translateY(-50%);
-      background: none; border: none; cursor: pointer;
-      color: var(--gray-400); font-size: .82rem; padding: 2px;
-    }
-
-    /* CTA button */
-    .btn-register {
-      width: 100%;
-      padding: 13px 20px;
-      background: linear-gradient(135deg, var(--purple) 0%, var(--purple-deep) 100%);
-      color: var(--white);
-      border: none; border-radius: var(--radius-md);
-      font-family: var(--font); font-size: .95rem; font-weight: 700;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      box-shadow: 0 4px 18px rgba(74,63,192,.32);
-      transition: filter var(--transition), transform var(--transition), box-shadow var(--transition);
-      margin-bottom: 14px;
-    }
-    .btn-register:hover:not(:disabled) {
-      filter: brightness(1.08); transform: translateY(-1px);
-      box-shadow: 0 8px 28px rgba(74,63,192,.42);
-    }
-    .btn-register:disabled { opacity: .55; cursor: not-allowed; }
-
-    .login-note {
-      text-align: center; font-size: .82rem; color: var(--gray-400);
-    }
-    .login-note a { color: var(--purple); font-weight: 600; text-decoration: none; }
-    .login-note a:hover { text-decoration: underline; }
-
-    /* bottom footer */
-    .right-footer {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 32px 20px;
-    }
-    .footer-brand { display: flex; align-items: center; gap: 8px; }
-    .fb-icon {
-      width: 26px; height: 26px;
-      background: linear-gradient(135deg, var(--purple), var(--purple-deep));
-      border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .72rem;
-    }
-    .fb-words .fb-rsia     { font-size: 8px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .1em; line-height: 1; }
-    .fb-words .fb-hospital { font-size: 11px; font-weight: 800; color: var(--gray-700); line-height: 1.2; }
-    .footer-copy { font-size: 11px; color: var(--gray-400); }
-
-    /* spinner */
-    .spinner {
-      width: 18px; height: 18px;
-      border: 2px solid rgba(255,255,255,.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      display: inline-block; flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    @media (max-width: 768px) {
-      body { grid-template-columns: 1fr; }
-      .left { display: none; }
+    .f-brand { display: flex; align-items: center; gap: .55rem; }
+    .f-logo { width: 24px; height: 24px; border-radius: 7px; background: rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center; }
+    .f-logo svg { width: 15px; height: 15px; }
+    .f-name-top  { font-size: .48rem; font-weight: 700; color: rgba(26,32,96,.6); letter-spacing: .07em; text-transform: uppercase; }
+    .f-name-main { font-size: .65rem; font-weight: 800; color: #1a2060; }
+    .f-div { width: 1px; height: 16px; background: rgba(26,32,96,.2); }
+    .f-sec { display: flex; align-items: center; gap: .45rem; }
+    .f-sec svg { width: 13px; height: 13px; stroke: #1a2060; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .f-sec-title { font-size: .68rem; font-weight: 800; color: #1a2060; }
+    .f-sec-desc  { font-size: .6rem; color: rgba(26,32,96,.55); font-weight: 500; }
+    .f-copy { font-size: .62rem; color: rgba(26,32,96,.5); font-weight: 500; }
+    @media (max-width:520px) {
+      .card { padding: 2rem 1.5rem; }
+      .row2 { grid-template-columns: 1fr; }
+      .footer { flex-wrap: wrap; padding: .7rem 1rem; gap: .6rem; }
+      .f-copy { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ LEFT PANEL ══ -->
-  <div class="left">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
+  <div class="card">
+    <a href="login-admin.html" class="back-link">
+      <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Kembali ke Login
+    </a>
 
-    <div class="left-topbar">
-      <div class="logo-icon">🏥</div>
-      <div class="logo-words">
-        <span class="rsia">RSIA</span>
-        <span class="name">AL HASANAH</span>
-        <span class="city">MADIUN</span>
+    <h1>Daftar Admin Baru</h1>
+    <p class="subtitle">Isi data berikut untuk membuat akun. Akun akan aktif setelah disetujui admin yang sudah aktif.</p>
+
+    <div class="note">
+      Alur aktivasi: Daftar di sini &rarr; Admin aktif buka <strong>Pending Aktivasi</strong> &rarr; Klik Aktifkan &rarr; Kamu bisa login.
+    </div>
+
+    <div id="alert-box"   class="alert d-none"></div>
+    <div id="success-box" class="alert d-none"></div>
+
+    <div class="form-group">
+      <label class="form-label">Nama Lengkap <span class="req">*</span></label>
+      <div class="inp">
+        <span class="inp-ico"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <input type="text" id="nama_lengkap" placeholder="Siti Rahayu, S.Kom" />
       </div>
     </div>
 
-    <div class="left-body">
-      <div class="chip">🔐 Pendaftaran Admin</div>
+    <div class="form-group">
+      <label class="form-label">Username <span class="req">*</span></label>
+      <div class="inp">
+        <span class="inp-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg></span>
+        <input type="text" id="username" placeholder="admin_siti" autocomplete="username" />
+      </div>
+      <p class="hint">Huruf kecil, tanpa spasi.</p>
+    </div>
 
-      <h1 class="hero-title">
-        Daftar Admin<br>
-        <span class="accent">SmartERM.</span>
-      </h1>
-
-      <p class="hero-desc">
-        Buat akun admin baru. Akunmu akan aktif setelah disetujui oleh admin yang sudah aktif.
-      </p>
-
-      <div class="flow-box">
-        <div class="flow-title">📋 Alur Aktivasi:</div>
-        <div class="flow-steps">
-          <div class="flow-step">
-            <div class="flow-num">1</div>
-            <div class="flow-text">Daftar di halaman ini</div>
-          </div>
-          <div class="flow-step">
-            <div class="flow-num">2</div>
-            <div class="flow-text">Admin aktif login &amp; buka "Pending Aktivasi"</div>
-          </div>
-          <div class="flow-step">
-            <div class="flow-num">3</div>
-            <div class="flow-text">Admin aktif klik "Aktifkan" akunmu</div>
-          </div>
-          <div class="flow-step">
-            <div class="flow-num">4</div>
-            <div class="flow-text">Kamu bisa login!</div>
-          </div>
+    <div class="row2">
+      <div class="form-group">
+        <label class="form-label">Password <span class="req">*</span></label>
+        <div class="inp">
+          <span class="inp-ico"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <input type="password" id="password" class="has-toggle" placeholder="Min. 6 karakter" autocomplete="new-password" />
+          <button class="toggle-pw" type="button" onclick="togglePw('password','e1')" tabindex="-1">
+            <svg id="e1" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Konfirmasi <span class="req">*</span></label>
+        <div class="inp">
+          <span class="inp-ico"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <input type="password" id="password2" class="has-toggle" placeholder="Ulangi password" autocomplete="new-password" />
+          <button class="toggle-pw" type="button" onclick="togglePw('password2','e2')" tabindex="-1">
+            <svg id="e2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
         </div>
       </div>
     </div>
 
-    <div class="left-footer">
-      <span class="lf-icon">🛡️</span>
-      <div class="lf-text">
-        <div class="lf-title">Sistem Internal &amp; Akses Terbatas</div>
-        <div class="lf-sub">Data pasien dilindungi sesuai kebijakan internal RSIA AL Hasanah Madiun</div>
-      </div>
-    </div>
+    <div class="divider"></div>
+
+    <button class="btn" id="btn-register" onclick="doRegister()">
+      Buat Akun
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+
+    <p class="login-note">Sudah punya akun? <a href="login-admin.html">Masuk di sini</a></p>
   </div>
 
-  <!-- ══ RIGHT PANEL ══ -->
-  <div class="right">
-    <div class="right-topbar">
-      <div class="sys-badge">Sistem Internal • Akses Terbatas</div>
+  <div class="toast" id="toast">
+    <div class="t-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div>
+      <div class="t-title" id="t-title">Pendaftaran berhasil!</div>
+      <div class="t-desc"  id="t-desc">Hubungi admin aktif untuk aktivasi.</div>
     </div>
+    <div class="t-bar"></div>
+  </div>
 
-    <div class="right-center">
-      <div class="auth-card">
-
-        <a href="login-admin.html" class="back-link">← Kembali ke Login</a>
-
-        <h2 class="card-heading">Daftar Admin Baru</h2>
-        <p class="card-sub">Isi data berikut untuk mendaftar. Akun perlu diaktifkan dulu.</p>
-
-        <div id="alert-box" class="d-none"></div>
-        <div id="success-box" class="d-none"></div>
-
-        <div class="form-group">
-          <label class="form-label">Nama Lengkap <span class="required">*</span></label>
-          <div class="inp-wrap">
-            <span class="inp-ico">👤</span>
-            <input type="text" id="nama_lengkap" class="form-control"
-              placeholder="Contoh: Siti Rahayu, S.Kom" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Username <span class="required">*</span></label>
-          <div class="inp-wrap">
-            <span class="inp-ico">@</span>
-            <input type="text" id="username" class="form-control"
-              placeholder="Huruf kecil, tanpa spasi" autocomplete="username" />
-          </div>
-          <p class="form-hint">Contoh: admin_siti</p>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Password <span class="required">*</span></label>
-          <div class="inp-wrap pw-wrap">
-            <span class="inp-ico">🔒</span>
-            <input type="password" id="password" class="form-control"
-              placeholder="Minimal 6 karakter" autocomplete="new-password" />
-            <button class="pw-toggle" type="button" onclick="togglePw(this)" tabindex="-1">👁</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Konfirmasi Password <span class="required">*</span></label>
-          <div class="inp-wrap pw-wrap">
-            <span class="inp-ico">🔒</span>
-            <input type="password" id="password2" class="form-control"
-              placeholder="Ulangi password" autocomplete="new-password" />
-            <button class="pw-toggle" type="button" onclick="togglePw(this)" tabindex="-1">👁</button>
-          </div>
-        </div>
-
-        <button class="btn-register" id="btn-register" onclick="doRegister()">
-          Daftar Sekarang →
-        </button>
-
-        <p class="login-note">
-          Sudah punya akun? <a href="login-admin.html">Masuk di sini</a>
-        </p>
-
+  <div class="footer">
+    <div class="f-brand">
+      <div class="f-logo">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v10l9 5 9-5V7L12 2z" stroke="#3b5bdb" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div class="f-name-top">RSIA</div>
+        <div class="f-name-main">AL HASANAH MADIUN</div>
       </div>
     </div>
-
-    <div class="right-footer">
-      <div class="footer-brand">
-        <div class="fb-icon">🏥</div>
-        <div class="fb-words">
-          <div class="fb-rsia">RSIA</div>
-          <div class="fb-hospital">AL HASANAH MADIUN</div>
-        </div>
+    <div class="f-div"></div>
+    <div class="f-sec">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div>
+        <div class="f-sec-title">Sistem Internal &amp; Akses Terbatas</div>
       </div>
-      <div class="footer-copy">© 2025 SmartERM v1.0.0 • Internal Use Only</div>
     </div>
+    <div class="f-div"></div>
+    <div class="f-copy">2025 SmartERM v1.0.0 &bull; Internal Use Only</div>
   </div>
 
   <script type="module">
     import { registerAdmin } from "../js/api.js";
-    import { showToast } from "../js/ui.js";
+
+    window.togglePw = function(id, svgId) {
+      const inp = document.getElementById(id);
+      const svg = document.getElementById(svgId);
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      svg.innerHTML = show
+        ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+        : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    };
+
+    function showToast(title, desc) {
+      const el = document.getElementById('toast');
+      document.getElementById('t-title').textContent = title;
+      document.getElementById('t-desc').textContent  = desc;
+      const bar = el.querySelector('.t-bar');
+      bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = '';
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3200);
+    }
 
     window.doRegister = async function() {
-      const nama      = document.getElementById("nama_lengkap").value.trim();
-      const username  = document.getElementById("username").value.trim();
-      const password  = document.getElementById("password").value;
-      const password2 = document.getElementById("password2").value;
-      const btn       = document.getElementById("btn-register");
-      const alertBox  = document.getElementById("alert-box");
-      const successBox= document.getElementById("success-box");
+      const nama  = document.getElementById('nama_lengkap').value.trim();
+      const user  = document.getElementById('username').value.trim();
+      const pw    = document.getElementById('password').value;
+      const pw2   = document.getElementById('password2').value;
+      const btn   = document.getElementById('btn-register');
+      const err   = document.getElementById('alert-box');
+      const suc   = document.getElementById('success-box');
 
-      alertBox.classList.add("d-none");
-      successBox.classList.add("d-none");
+      err.classList.add('d-none');
+      suc.classList.add('d-none');
 
-      // Validasi
-      if (!nama || !username || !password || !password2) {
-        alertBox.className = "alert-error";
-        alertBox.innerHTML = "⚠️ Semua field wajib diisi.";
-        alertBox.classList.remove("d-none");
-        return;
+      if (!nama || !user || !pw || !pw2) {
+        err.className = 'alert alert-error';
+        err.textContent = 'Semua field wajib diisi.';
+        err.classList.remove('d-none'); return;
       }
-      if (password.length < 6) {
-        alertBox.className = "alert-error";
-        alertBox.innerHTML = "⚠️ Password minimal 6 karakter.";
-        alertBox.classList.remove("d-none");
-        return;
+      if (pw.length < 6) {
+        err.className = 'alert alert-error';
+        err.textContent = 'Password minimal 6 karakter.';
+        err.classList.remove('d-none'); return;
       }
-      if (password !== password2) {
-        alertBox.className = "alert-error";
-        alertBox.innerHTML = "⚠️ Password dan konfirmasi password tidak cocok.";
-        alertBox.classList.remove("d-none");
-        return;
+      if (pw !== pw2) {
+        err.className = 'alert alert-error';
+        err.textContent = 'Password dan konfirmasi tidak cocok.';
+        err.classList.remove('d-none'); return;
       }
 
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span> Mendaftar...';
 
       try {
-        await registerAdmin(username, password, nama);
-
-        successBox.className = "alert-success";
-        successBox.innerHTML = `
-          ✅ <strong>Pendaftaran berhasil!</strong><br>
-          Akun <strong>${nama}</strong> berhasil dibuat. Hubungi admin aktif untuk mengaktifkan akunmu, lalu kamu bisa login.
-        `;
-        successBox.classList.remove("d-none");
-
-        // Reset form
-        ["nama_lengkap","username","password","password2"].forEach(id => {
-          document.getElementById(id).value = "";
-        });
-
-        btn.disabled = false;
-        btn.innerHTML = "Daftar Sekarang →";
-
-      } catch (err) {
-        alertBox.className = "alert-error";
-        alertBox.innerHTML = `❌ ${err.message}`;
-        alertBox.classList.remove("d-none");
-        btn.disabled = false;
-        btn.innerHTML = "Daftar Sekarang →";
+        await registerAdmin(user, pw, nama);
+        showToast('Pendaftaran berhasil!', 'Hubungi admin aktif untuk aktivasi akun.');
+        suc.className = 'alert alert-success';
+        suc.innerHTML = 'Akun <strong>' + nama + '</strong> berhasil dibuat. Hubungi admin aktif untuk mengaktifkan akunmu.';
+        suc.classList.remove('d-none');
+        ['nama_lengkap','username','password','password2'].forEach(id => document.getElementById(id).value = '');
+      } catch(e) {
+        err.className = 'alert alert-error';
+        err.textContent = e.message;
+        err.classList.remove('d-none');
       }
+
+      btn.disabled = false;
+      btn.innerHTML = 'Buat Akun <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
     };
 
-    window.togglePw = function(btn) {
-      const input = btn.closest('.pw-wrap').querySelector('input');
-      input.type = input.type === 'password' ? 'text' : 'password';
-      btn.textContent = input.type === 'password' ? '👁' : '🙈';
-    };
-
-    document.addEventListener("keydown", e => {
-      if (e.key === "Enter") window.doRegister();
-    });
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') window.doRegister(); });
   </script>
 </body>
 </html>

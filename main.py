@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -12,29 +12,18 @@ from database import engine, get_db
 from routers import admin, dokter, medical
 from schemas import RegisterAdminSchema, Token
 
-# Buat semua tabel di database jika belum ada — aman dijalankan berkali-kali
+
 models.Base.metadata.create_all(bind=engine)
 
-# ─────────────────────────────────────────────
-# Inisialisasi aplikasi FastAPI
-# ─────────────────────────────────────────────
 app = FastAPI(
     title="SmartERM RSIA Al Hasanah",
     description="Sistem Rekam Medis Elektronik berbasis AI (Whisper + Llama 3)",
     version="2.0.0",
 )
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR     = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
-app.mount("/css", StaticFiles(directory=FRONTEND_DIR / "css"), name="css")
-app.mount("/js", StaticFiles(directory=FRONTEND_DIR / "js"), name="js")
-app.mount("/pages", StaticFiles(directory=FRONTEND_DIR / "pages"), name="pages")
-app.mount("/animations", StaticFiles(directory="frontend/animations"), name="animations")
-
-@app.get("/")
-def serve_index():
-    return FileResponse(FRONTEND_DIR / "index.html")
 
 app.add_middleware(
     CORSMiddleware,
@@ -44,28 +33,61 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─────────────────────────────────────────────
-# Daftarkan semua router
-# ─────────────────────────────────────────────
 
-app.include_router(admin.router,  prefix="/admin",   tags=["Admin"])
-app.include_router(dokter.router, prefix="/dokter",  tags=["Manajemen Pasien"])
+# ─────────────────────────────────────────────
+# STATIC FOLDER ASSET
+# ─────────────────────────────────────────────
+app.mount("/css",        StaticFiles(directory=FRONTEND_DIR / "css"),        name="css")
+app.mount("/js",         StaticFiles(directory=FRONTEND_DIR / "js"),         name="js")
+app.mount("/pages",      StaticFiles(directory=FRONTEND_DIR / "pages"),      name="pages")
+app.mount("/animations", StaticFiles(directory=FRONTEND_DIR / "animations"), name="animations")
+
+
+# ─────────────────────────────────────────────
+# FILE STATIS GAMBAR — serve dari /pages/ karena
+# logo & gambar disimpan di frontend/pages/
+# ─────────────────────────────────────────────
+@app.get("/logoalhasanah.png")
+def serve_logo():
+    return FileResponse(FRONTEND_DIR / "pages" / "logoalhasanah.png")
+
+@app.get("/logo yayasan hijau.png")
+def serve_logo_yayasan():
+    return FileResponse(FRONTEND_DIR / "pages" / "logo yayasan hijau.png")
+
+@app.get("/rsia-building.png")
+def serve_building():
+    return FileResponse(FRONTEND_DIR / "pages" / "rsia-building.png")
+
+
+# ─────────────────────────────────────────────
+# ROUTER API
+# ─────────────────────────────────────────────
+app.include_router(admin.router,   prefix="/admin",   tags=["Admin"])
+app.include_router(dokter.router,  prefix="/dokter",  tags=["Manajemen Pasien"])
 app.include_router(medical.router, prefix="/medical", tags=["AI & Rekam Medis"])
 
 
 # ─────────────────────────────────────────────
-# Endpoint Auth (publik, tanpa prefix)
+# HALAMAN UTAMA
 # ─────────────────────────────────────────────
+@app.get("/")
+def serve_index():
+    return FileResponse(FRONTEND_DIR / "index.html")
 
+@app.get("/index.html")
+def serve_index_html():
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+# ─────────────────────────────────────────────
+# AUTH
+# ─────────────────────────────────────────────
 @app.post("/login", response_model=Token, tags=["Auth"])
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
-    """
-    Login untuk semua pengguna (admin & dokter).
-    Mengembalikan JWT token yang dipakai untuk mengakses endpoint lain.
-    """
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
 
     if not user or not verify_password(form_data.password, user.password):
@@ -86,11 +108,6 @@ def login(
 
 @app.post("/register-admin", tags=["Auth"])
 def register_admin(data: RegisterAdminSchema, db: Session = Depends(get_db)):
-    """
-    Pendaftaran akun admin baru.
-    Akun yang baru terdaftar berstatus tidak aktif (is_active=False)
-    dan perlu diaktifkan oleh admin lain melalui PUT /admin/activate/{id}.
-    """
     if db.query(models.User).filter(models.User.username == data.username).first():
         raise HTTPException(
             status_code=400,
@@ -102,7 +119,7 @@ def register_admin(data: RegisterAdminSchema, db: Session = Depends(get_db)):
         password=get_password_hash(data.password),
         nama_lengkap=data.nama_lengkap,
         role="admin",
-        is_active=False,   # Harus diaktifkan admin lain terlebih dahulu
+        is_active=False,
     )
 
     db.add(admin_baru)
@@ -110,18 +127,21 @@ def register_admin(data: RegisterAdminSchema, db: Session = Depends(get_db)):
     db.refresh(admin_baru)
 
     return {
-        "msg": f"Akun admin '{data.nama_lengkap}' berhasil didaftarkan. Menunggu aktivasi.",
+        "msg":     f"Akun admin '{data.nama_lengkap}' berhasil didaftarkan. Menunggu aktivasi.",
         "id_user": admin_baru.id_user,
     }
 
 
-# ─────────────────────────────────────────────
-# Health check
-# ─────────────────────────────────────────────
+@app.get("/logout")
+def logout():
+    response = RedirectResponse(url="/index.html")
+    response.delete_cookie("access_token")
+    response.delete_cookie("role")
+    return response
+
 
 @app.get("/health", tags=["Info"])
 def health_check():
-    """Cek apakah server sedang berjalan dengan normal."""
     return {
         "status": "✅ Server SmartERM Aktif!",
         "versi":  "2.0.0",
