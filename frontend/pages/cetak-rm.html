@@ -119,12 +119,21 @@
       padding: 3px 8px;
       vertical-align: middle;
     }
-    .data-table td.lbl { width: 200px; }
-    .data-table tr.tall td {
-      height: 30px;
-      vertical-align: top;
-      padding-top: 4px;
+
+    .data-table td.lbl {
+      width: 200px;
     }
+
+    .data-table td.val {
+      width: auto;
+    }
+    .data-table tr.tall td {
+     min-height: 30px;
+     vertical-align: top;
+     padding-top: 4px;
+     white-space: pre-wrap;
+     word-break: break-word;
+}
 
     /* ─── Footer / TTD ───────────────────── */
     .surat-footer {
@@ -254,7 +263,7 @@
       <div class="data-rahasia">Data Rahasia</div>
 
       <!-- Judul -->
-      <div class="doc-title">PENGKAJIAN MEDIS RAWAT JALAN PASIEN GINEKOLOGI</div>
+      <div class="doc-title">ASESMEN MEDIS RAWAT JALAN PASIEN OBGYN</div>
 
       <!-- ═══ I. DATA PASIEN ═══ -->
       <div class="section">
@@ -294,6 +303,7 @@
         <div class="section-title">IV. DATA KEBIDANAN</div>
         <table class="data-table">
           ${row('HPHT', dm.hpht ? fmtDate(dm.hpht) : '')}
+          ${row('HPL', dm.hpl ? fmtDate(dm.hpl) : '')}
         </table>
       </div>
 

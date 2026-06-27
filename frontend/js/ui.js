@@ -1,8 +1,3 @@
-/**
- * ui.js - Komponen UI yang dipakai di semua halaman
- * Toast, modal helpers, loading overlay, dll.
- */
-
 // ─── Toast Notification ───────────────────────────────────────────────────────
 (function initToast() {
   if (!document.getElementById("toast-container")) {

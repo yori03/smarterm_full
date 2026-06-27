@@ -1,12 +1,3 @@
-"""
-auth.py - Kriptografi Password & Pembuatan JWT Token
-
-Fungsi:
-    get_password_hash()   : ubah password biasa → hash bcrypt (tidak bisa dikembalikan)
-    verify_password()     : cocokkan password input dengan hash di database
-    create_access_token() : buat JWT token yang dikirim ke client setelah login
-"""
-
 from jose import jwt
 from passlib.context import CryptContext
 

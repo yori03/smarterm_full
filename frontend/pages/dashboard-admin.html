@@ -38,7 +38,7 @@
     .nav-center { flex: 1; padding: 0 1.75rem; display: flex; flex-direction: column; justify-content: center; }
     .app-name { display: flex; align-items: center; gap: 0.42rem; font-size: 0.93rem; font-weight: 800; color: var(--text); }
     .admin-badge { background: #dc2626; color: white; font-size: 0.56rem; font-weight: 800; padding: 0.1rem 0.42rem; border-radius: 5px; letter-spacing: 0.04em; }
-    .workspace-label { font-size: 0.71rem; color: var(--text-muted); font-weight: 500; }
+    .workspace-label { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
     .nav-right { display: flex; align-items: center; gap: 0.6rem; padding: 0 1.5rem; flex-shrink: 0; }
     .user-info { display: flex; align-items: center; gap: 0.55rem; }
     .user-avatar { width: 32px; height: 32px; border-radius: 999px; background: var(--purple-bg); border: 1.5px solid var(--purple-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -124,13 +124,22 @@
 
     /* TABLE */
     .tbl-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 1 rem; }
     thead { background: #f9fafb; }
-    thead th { padding: 0.7rem 1.2rem; text-align: left; font-weight: 700; font-size: 0.71rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    tbody td { padding: 0.85rem 1.2rem; border-bottom: 1px solid #f3f4f6; color: var(--text-soft); vertical-align: middle; }
+    thead th { padding: 0.7rem 1.2rem; text-align: left; font-weight: 700; font-size: 0.90rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tbody td { padding: 0.85rem 1.2rem; border-bottom: 1px solid #f3f4f6; color: var(--text-soft); vertical-align: middle;font-size: 0.95rem;}
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #fafafa; }
     .tbl-empty { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.83rem; }
+
+    /* Tabel Riwayat Kunjungan (Cetak Rekam Medis) — kasih jarak lebih ke kolom Aksi
+       agar tombol "Lihat" tidak nempel ke kolom Status saat kolom Dokter kosong/pendek */
+    .tbl-riwayat-kunjungan th.col-dokter,
+    .tbl-riwayat-kunjungan td.col-dokter { min-width: 160px; }
+    .tbl-riwayat-kunjungan th.col-status,
+    .tbl-riwayat-kunjungan td.col-status { padding-right: 1.6rem; }
+    .tbl-riwayat-kunjungan th.col-aksi,
+    .tbl-riwayat-kunjungan td.col-aksi { padding-left: 2rem; }
 
     /* FORM CARD */
     .form-outer { max-width: 720px; margin: 0 auto; }
@@ -586,7 +595,7 @@
     listDokter, createDokter, editDokter, hapusDokter,
     listAdmin,  createAdmin,  editAdmin,  hapusAdmin,
     pendingAktivasi, aktivasiUser,
-    cariPasien, getPasien
+    cariPasien, getPasien, getRekamMedis
   } from "../js/api.js";
   import { guardPage, renderUserInfo, clearSession } from "../js/auth.js";
 
@@ -631,6 +640,15 @@
     const bulan = sekarang.getMonth() - lahir.getMonth();
     if (bulan < 0 || (bulan === 0 && sekarang.getDate() < lahir.getDate())) umur--;
     return `${umur} tahun`;
+  }
+
+  // Samakan alur pengambilan nama dokter dengan cetak-rm.html, di mana data
+  // dokter dibaca langsung dari field root `data.dokter` (string), bukan dari
+  // objek bersarang. Field `r.dokter` jadi prioritas pertama; sisanya tetap
+  // dipertahankan sebagai fallback untuk bentuk respons lain.
+  function namaDokterDariRiwayat(r) {
+    return r.dokter || r.nama_dokter || r.dokter_nama || r.dokter?.nama_lengkap
+        || r.dokter?.nama || r.nama_dokter_pemeriksa || '-';
   }
 
   function escStr(s) {
@@ -910,14 +928,29 @@
       const data = await getPasien(no_rm);
       const p    = data.data_pasien;
 
+      // Ringkasan riwayat_berobat tidak menyertakan nama dokter, makanya
+      // kolom Dokter selalu kosong. Samakan dengan alur cetak-rm.html: ambil
+      // detail tiap record lewat getRekamMedis(id) lalu baca field `dokter`
+      // langsung dari sana — sumber data yang sama dengan yang dicantumkan
+      // di TTD halaman cetak.
+      const detailList = await Promise.all(
+        data.riwayat_berobat.map(r => getRekamMedis(r.id_record).catch(() => null))
+      );
+      const dokterMap = {};
+      data.riwayat_berobat.forEach((r, i) => {
+        const detail = detailList[i];
+        dokterMap[r.id_record] = (detail && detail.dokter) || namaDokterDariRiwayat(r);
+      });
+
       const riwayatRows = data.riwayat_berobat.length === 0
-        ? `<tr><td colspan="4" class="tbl-empty">Belum ada rekam medis.</td></tr>`
+        ? `<tr><td colspan="5" class="tbl-empty">Belum ada rekam medis.</td></tr>`
         : data.riwayat_berobat.map(r => `
           <tr>
             <td>${formatDateTime(r.waktu_pemeriksaan)}</td>
             <td>${r.diagnosa_utama || '-'}</td>
-            <td><span class="badge ${r.status_record === 'final' ? 'badge-green' : 'badge-amber'}">${r.status_record}</span></td>
-            <td>
+            <td class="col-dokter">${dokterMap[r.id_record] || '-'}</td>
+            <td class="col-status"><span class="badge ${r.status_record === 'final' ? 'badge-green' : 'badge-amber'}">${r.status_record}</span></td>
+            <td class="col-aksi">
   <a href="cetak-rm.html?id=${r.id_record}"
      class="btn btn-outline btn-sm"
      target="_blank">
@@ -963,8 +996,8 @@
             <h3>🗂️ Riwayat Kunjungan (${data.total_kunjungan}x)</h3>
           </div>
           <div class="tbl-wrap">
-            <table>
-              <thead><tr><th>Waktu Pemeriksaan</th><th>Diagnosa Utama</th><th>Status</th><th>Aksi</th></tr></thead>
+            <table class="tbl-riwayat-kunjungan">
+              <thead><tr><th>Waktu Pemeriksaan</th><th>Diagnosa Utama</th><th class="col-dokter">Dokter</th><th class="col-status">Status</th><th class="col-aksi">Aksi</th></tr></thead>
               <tbody>${riwayatRows}</tbody>
             </table>
           </div>
